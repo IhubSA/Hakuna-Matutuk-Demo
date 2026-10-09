@@ -1,0 +1,1178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hakuna Matuktuk Bookings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: coastal-road public site (photo-led cards, one bold saffron CTA) + a calm operations console for the owner */
+/* Layout: sunny beach-day site: sky-to-sand hero, turquoise sea, sunshine CTA, coral flags. Deliberately one light theme. */
+:root{
+  --bg:#FFF8EC; --surface:#FFFFFF; --surface-2:#E6F5F5; --ink:#13324B; --muted:#56708A; --line:#D7E7EA;
+  --sea:#0A7D91; --sea-ink:#0A5A6C; --sea-soft:#D2F0F2; --water:#1FA6BC; --sky:#CBEEF8;
+  --saffron:#FFC23D; --saffron-ink:#3A2600; --saffron-soft:#FFEFC2;
+  --coral:#E85A4F; --coral-soft:#FFE0DA;
+  --ok:#1E8048; --ok-soft:#D8F2E2; --warn:#A35F00; --warn-soft:#FFEBC9; --bad:#B23A2E; --bad-soft:#FADBD6;
+  --sky-a:#A6DFF2; --sky-b:#FFE2B5; --hill:#6FB48A; --hill-2:#4A9370;
+  --shadow:0 2px 4px rgba(19,50,75,.05),0 12px 28px rgba(19,50,75,.09);
+  --f-display:"Fredoka","Baloo 2","Arial Rounded MT Bold","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --r:20px;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{color-scheme:light}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{background:radial-gradient(1200px 500px at 85% -10%,var(--sky) 0%,transparent 60%),var(--bg)}
+body{font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.08;margin:0;text-wrap:balance;letter-spacing:0;font-weight:600}
+p{margin:0}
+a{color:var(--sea)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--saffron);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sea)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-size:.86em;letter-spacing:0}
+.num{font-variant-numeric:tabular-nums}
+
+/* demo ribbon + header */
+.ribbon{background:var(--saffron);color:var(--saffron-ink);font-weight:500;font-size:13px;padding:7px 20px;text-align:center}
+:root .ribbon b{color:var(--saffron-ink)}
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hdr .wrap{display:flex;align-items:center;gap:18px;min-height:66px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.brand-mark{width:38px;height:38px;border-radius:50%;background:var(--saffron);display:grid;place-items:center;flex:none}
+.brand-name{font-family:var(--f-display);font-weight:700;font-size:23px;line-height:1;color:var(--sea-ink)}
+.brand-sub{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:var(--f-body);font-weight:600;margin-top:3px}
+.nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap;align-items:center}
+.nav button{background:none;border:0;padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:600;color:var(--ink)}
+.nav button:hover{background:var(--surface-2)}
+.nav button.on{background:var(--surface-2)}
+.nav .admin-link{border:1.5px solid var(--line);margin-left:6px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:12px 22px;font-weight:700;border:1.5px solid transparent;cursor:pointer;text-decoration:none;transition:transform .15s ease,background .15s}
+.btn:active{transform:translateY(1px)}
+.btn-go{background:var(--saffron);color:var(--saffron-ink);letter-spacing:.04em;text-transform:uppercase;font-size:14px}
+.btn-go:hover{background:color-mix(in srgb,var(--saffron) 85%,var(--ink))}
+.btn-sea{background:var(--sea);color:var(--surface)}
+.btn-line{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-line:hover{border-color:var(--sea);color:var(--sea)}
+.btn-sm{padding:7px 14px;font-size:14px}
+.btn-danger{background:transparent;border-color:var(--bad);color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* photo with drawn fallback */
+.ph{position:relative;overflow:hidden;background:var(--sky-a);isolation:isolate}
+.ph svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
+
+/* hero */
+.hero{padding-block:44px 70px;background:linear-gradient(180deg,var(--sky) 0%,color-mix(in srgb,var(--sky) 40%,var(--bg)) 60%,var(--bg) 100%);position:relative}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:40px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C150 4 300 4 450 22 S750 40 900 22 S1100 6 1200 20 V40 H0Z' fill='%23FFF8EC'/%3E%3C/svg%3E") center/100% 100% no-repeat;pointer-events:none}
+.hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(42px,6.4vw,78px);font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+.hero h1 em{font-style:normal;color:var(--sea);text-decoration:underline wavy var(--coral);text-decoration-thickness:4px;text-underline-offset:10px;text-decoration-skip-ink:none}
+.hero p.lead{font-size:19px;color:var(--muted);margin-top:18px;max-width:34ch}
+.hero-ctas{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+.hero-ph{aspect-ratio:4/4.2;border-radius:46% 54% 42% 58% / 52% 40% 60% 48%;box-shadow:var(--shadow);max-width:100%;border:8px solid var(--surface);transform:rotate(1.5deg)}
+.road{position:relative;height:46px;margin-top:26px;max-width:460px;border-bottom:3px dashed color-mix(in srgb,var(--sea) 45%,transparent)}
+.road .tuk{position:absolute;bottom:2px;left:0;animation:drive 3.2s cubic-bezier(.3,.7,.3,1) .3s both,bob .5s ease-in-out 3.5s infinite alternate}
+@keyframes drive{from{left:0}to{left:calc(100% - 52px)}}
+@keyframes bob{to{transform:translateY(-2px) rotate(-1deg)}}
+.hero-badge{position:absolute;left:18px;bottom:18px;z-index:2;background:var(--surface);color:var(--ink);border-radius:14px;padding:10px 14px;font-size:13px;box-shadow:var(--shadow);max-width:250px}
+.hero-badge b{display:block;font-family:var(--f-display);font-size:16px}
+.trust{display:flex;gap:10px 26px;flex-wrap:wrap;margin-top:30px;color:var(--muted);font-size:14px}
+.trust span{display:flex;align-items:center;gap:8px}
+.trust i{width:10px;height:10px;border-radius:50%;background:var(--coral);display:inline-block}
+
+/* entry points */
+.entries{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-block:20px 10px}
+.entry{background:var(--surface);border:2px solid transparent;border-radius:var(--r);padding:22px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,transform .15s}
+.entry:nth-child(1){background:var(--sea-soft)}.entry:nth-child(2){background:var(--coral-soft)}.entry:nth-child(3){background:var(--saffron-soft)}
+.entry:hover{border-color:var(--ink);transform:translateY(-3px) rotate(-.6deg)}
+.entry h3{font-size:25px}
+.entry .go{margin-top:auto;font-weight:700;color:var(--sea);font-size:14px;padding-top:8px}
+
+/* collections */
+.section{padding-block:46px}
+.sec-head{display:flex;justify-content:space-between;gap:20px;align-items:end;flex-wrap:wrap;margin-bottom:22px}
+.sec-head h2{font-size:clamp(30px,3.8vw,44px);font-weight:700;color:var(--sea-ink)}
+.sec-head p{max-width:60ch;color:var(--muted);margin-top:8px}
+.note{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14px}
+.note.sea{background:var(--sea-soft)}
+.note b{white-space:nowrap}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 2px 0 var(--line);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;text-align:left;padding:0;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-4px) rotate(-.4deg);box-shadow:var(--shadow)}
+.card:nth-child(3n+2):hover{transform:translateY(-4px) rotate(.4deg)}
+.card .ph{aspect-ratio:16/10.5}
+.card-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{font-size:21px;font-weight:700}
+.card .meta{display:flex;justify-content:space-between;gap:10px;margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);font-size:14px;color:var(--muted)}
+.card .price{font-family:var(--f-display);font-weight:700;color:var(--coral);font-size:19px;color:var(--ink)}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:999px;width:max-content}
+.tag.essential{background:var(--sea-soft);color:var(--sea-ink)}
+.tag.premium{background:var(--coral-soft);color:var(--coral)}
+.tag.signature{background:var(--saffron);color:var(--saffron-ink)}
+.tag.capetown{background:var(--surface-2);color:var(--ink)}
+.tag.grape{background:var(--coral-soft);color:var(--ink)}
+.tag.custom{background:var(--surface-2);color:var(--muted)}
+.coll-band{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 14'%3E%3Cpath d='M0 7 Q15 0 30 7 T60 7 T90 7 T120 7' fill='none' stroke='%231FA6BC' stroke-opacity='.45' stroke-width='2.5'/%3E%3C/svg%3E") top center/120px 14px repeat-x}
+.coll-band:nth-of-type(odd){background-color:color-mix(in srgb,var(--sea-soft) 45%,var(--bg))}
+
+/* journey path */
+.path{display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center;font-family:var(--f-display);font-weight:700;font-size:clamp(18px,2.6vw,28px);letter-spacing:.02em}
+.path span{padding:6px 10px}
+.path .arrow{color:var(--coral)}
+.path span:last-child{color:var(--sea)}
+
+/* experience page */
+.exp-hero{display:grid;grid-template-columns:1.25fr 1fr;gap:34px;padding-block:30px;align-items:start}
+.exp-hero .ph{aspect-ratio:4/3;border-radius:28px;max-width:100%;border:6px solid var(--surface);box-shadow:var(--shadow)}
+.back{background:none;border:0;color:var(--muted);cursor:pointer;font-weight:600;padding:0;margin-top:22px}
+.back:hover{color:var(--sea)}
+.exp-title{font-size:clamp(34px,4.6vw,56px);font-weight:700;margin-top:10px;color:var(--sea-ink)}
+.exp-price{font-family:var(--f-display);font-size:30px;font-weight:700;margin-top:14px}
+.exp-price small{font-family:var(--f-body);font-size:15px;font-weight:500;color:var(--muted)}
+.facts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.fact{background:var(--surface-2);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600}
+.headline{font-family:var(--f-display);font-weight:600;font-size:23px;color:var(--coral);margin-top:22px;letter-spacing:-.01em}
+.exp-body{display:grid;grid-template-columns:1.25fr 1fr;gap:34px;padding-bottom:60px}
+.prose{display:flex;flex-direction:column;gap:14px;max-width:66ch;font-size:17px}
+.side-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:16px}
+.side-card h4{font-size:13px;font-family:var(--f-body);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.ticks li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.ticks li::before{content:"";flex:none;width:18px;height:18px;margin-top:2px;border-radius:50%;background:var(--ok-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3 3 7-7' fill='none' stroke='%2323804D' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat}
+.ticks.x li::before{background:var(--bad-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 6l8 8M14 6l-8 8' fill='none' stroke='%23B23A2E' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") center/12px no-repeat}
+.ticks.b li::before{background:var(--saffron-soft)}
+.sticky-cta{position:sticky;top:90px}
+
+/* booking */
+.book-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:26px;padding-block:24px 60px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px}
+.steps button{border:0;background:var(--surface-2);color:var(--muted);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.steps button.is-done{background:var(--sea-soft);color:var(--sea-ink)}
+.steps button.on{background:var(--sea);color:#fff}
+.steps button[disabled]{cursor:default}
+.q{font-size:28px;font-weight:700;margin-bottom:6px}
+.q-sub{color:var(--muted);margin-bottom:20px}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal-head b{font-family:var(--f-display);font-size:19px}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;line-height:1;display:grid;place-items:center}
+.icon-btn:hover{border-color:var(--sea)}
+.icon-btn[disabled]{opacity:.35;cursor:not-allowed}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal .dow{font-size:12px;text-align:center;color:var(--muted);font-weight:700;padding-bottom:4px}
+.cal .d{aspect-ratio:1/1;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;font-size:15px;padding:0;min-width:0}
+.cal .d small{font-size:10px;font-weight:600;color:var(--muted);line-height:1}
+.cal .d:hover:not([disabled]){border-color:var(--sea)}
+.cal .d[disabled]{background:var(--surface-2);color:var(--muted);opacity:.55;cursor:not-allowed;border-color:transparent;text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 50%,transparent)}
+.cal .d.sel{background:var(--sea);border-color:var(--sea);color:var(--surface)}
+.cal .d.sel small{color:var(--surface)}
+.cal .blank{visibility:hidden}
+.legend{display:flex;gap:16px;margin-top:12px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:6px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.slot{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px}
+.slot b{font-family:var(--f-display);font-size:22px;font-variant-numeric:tabular-nums}
+.slot small{font-size:12px;color:var(--muted)}
+.slot:hover:not([disabled]){border-color:var(--sea)}
+.slot.sel{border-color:var(--sea);background:var(--sea-soft)}
+.slot[disabled]{opacity:.5;cursor:not-allowed;background:var(--surface-2)}
+.opts{display:grid;gap:10px;margin-bottom:22px}
+.opt{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.opt.sel{border-color:var(--sea);background:var(--sea-soft)}
+.counter{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);gap:12px}
+.counter .ctl{display:flex;align-items:center;gap:14px}
+.counter .ctl b{min-width:22px;text-align:center;font-size:20px;font-family:var(--f-display);font-variant-numeric:tabular-nums}
+.tuks{display:flex;gap:14px;align-items:center;margin-top:20px;padding:16px;border-radius:14px;background:var(--saffron-soft);flex-wrap:wrap}
+.tuks .eq{font-family:var(--f-display);font-weight:700;font-size:20px}
+.tuk-row{display:flex;gap:6px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;min-width:0}
+.field label{font-size:14px;font-weight:700}
+.field .hint{font-size:13px;color:var(--muted)}
+.inp{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:11px 13px;min-width:0}
+.inp:focus{border-color:var(--sea);outline:none}
+textarea.inp{min-height:88px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.zone{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;font-size:14px;margin-top:4px}
+.zone.in{background:var(--ok-soft)}
+.zone.out{background:var(--warn-soft)}
+.zone .dot{width:12px;height:12px;border-radius:50%;flex:none;margin-top:4px}
+.zone.in .dot{background:var(--ok)}
+.zone.out .dot{background:var(--warn)}
+.pick-rule{font-size:14px;background:var(--surface-2);border-radius:12px;padding:12px 14px;margin-bottom:16px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer}
+.chip:hover{border-color:var(--sea)}
+.foot{display:flex;justify-content:space-between;gap:12px;margin-top:24px;padding-top:18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.err{color:var(--bad);font-size:14px;font-weight:600;margin-top:10px}
+.summary{position:sticky;top:90px;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.summary .ph{aspect-ratio:16/8}
+.summary-in{padding:20px}
+.summary h3{font-size:22px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin-top:14px;font-size:15px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:600;text-align:right;min-width:0;overflow-wrap:anywhere}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;padding-top:14px;border-top:2px solid var(--ink)}
+.total b{font-family:var(--f-display);font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:15px;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--sea)}
+
+/* payment */
+.pay{max-width:560px;margin:34px auto 60px}
+.pay-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.pay-top{padding:26px;background:linear-gradient(135deg,var(--sea) 0%,var(--water) 100%);color:#fff}
+.pay-top .amt{font-family:var(--f-display);font-weight:700;font-size:44px;margin-top:6px;font-variant-numeric:tabular-nums}
+.pay-in{padding:26px;display:flex;flex-direction:column;gap:14px}
+.lock{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted)}
+.spinner{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--sea);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* confirmation */
+.done-page{max-width:860px;margin:34px auto 60px;display:flex;flex-direction:column;gap:22px}
+.done-hero{background:var(--saffron) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 14'%3E%3Cpath d='M0 7 Q15 0 30 7 T60 7 T90 7 T120 7' fill='none' stroke='%23E85A4F' stroke-opacity='.5' stroke-width='3'/%3E%3C/svg%3E") bottom 18px center/120px 14px repeat-x;color:var(--saffron-ink);border-radius:24px;padding:34px;position:relative;overflow:hidden}
+.done-hero h1{font-size:clamp(42px,6vw,68px);font-weight:700}
+.done-hero .ref{font-family:var(--f-mono);font-size:14px;margin-top:8px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.msg{align-self:start;border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--surface);font-size:14px;display:flex;flex-direction:column;gap:8px}
+.msg .ch{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.bubble{background:var(--ok-soft);border-radius:12px 12px 12px 4px;padding:12px 14px;white-space:pre-line}
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.timeline li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:12px;padding-bottom:16px;position:relative}
+.timeline li::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--sea);margin-top:5px;margin-left:3px}
+.timeline li.sch::before{background:var(--surface);border:2px solid var(--sea)}
+.timeline li:not(:last-child)::after{content:"";position:absolute;left:8px;top:20px;bottom:0;border-left:2px dotted var(--line)}
+
+/* footer */
+.footer{border-top:1px solid var(--line);padding-block:34px;margin-top:20px;color:var(--muted);font-size:14px}
+.footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.footer b{color:var(--ink)}
+
+/* ADMIN */
+.admin{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 110px)}
+.side{border-right:1px solid var(--line);padding:22px 14px;background:var(--surface);display:flex;flex-direction:column;gap:4px}
+.side .who{padding:4px 10px 16px;font-size:13px;color:var(--muted)}
+.side .who b{display:block;color:var(--ink);font-size:15px}
+.side button{display:flex;justify-content:space-between;align-items:center;text-align:left;background:none;border:0;border-radius:10px;padding:10px 12px;font-weight:600;cursor:pointer;color:var(--ink)}
+.side button:hover{background:var(--surface-2)}
+.side button.on{background:var(--sea);color:var(--surface)}
+.side .count{font-size:12px;background:var(--saffron);color:var(--saffron-ink);border-radius:999px;padding:1px 8px;font-weight:700}
+.side .spacer{flex:1}
+.main{padding:26px 28px 60px;min-width:0}
+.main h1{font-size:32px;font-weight:700}
+.main-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kpi .l{font-size:13px;color:var(--muted);font-weight:600}
+.kpi .v{font-family:var(--f-display);font-weight:700;font-size:30px;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:13px;color:var(--muted)}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.filters button.on{background:var(--sea);border-color:var(--sea);color:#fff}
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;font-weight:700}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover{background:var(--surface-2)}
+td.time{font-family:var(--f-display);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.day-row td{background:var(--surface-2);font-weight:700;font-size:13px;padding:8px 14px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.info{background:var(--sea-soft);color:var(--sea-ink)}
+.pill.mute{background:var(--surface-2);color:var(--muted)}
+.vchip{display:inline-block;font-weight:700;border-radius:8px;padding:2px 8px;font-size:13px;margin:1px 2px 1px 0;background:var(--saffron-soft)}
+.empty{padding:34px;text-align:center;color:var(--muted)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.box h3{font-size:19px;margin-bottom:12px}
+.fleet{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.veh{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.veh h3{font-size:26px;display:flex;align-items:center;gap:10px}
+.light{width:14px;height:14px;border-radius:50%;display:inline-block}
+.light.available{background:var(--ok)}
+.light.unavailable{background:var(--bad)}
+.light.maintenance{background:var(--warn)}
+.engine{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px;border-radius:14px;background:var(--sea-soft);margin-bottom:18px}
+.engine b{font-family:var(--f-display);font-size:24px}
+.mcal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.mcal .c{min-height:84px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:6px 8px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px;font-size:12px;min-width:0}
+.mcal .c .n{font-weight:700;font-size:13px}
+.mcal .c.today{border-color:var(--saffron);border-width:2px}
+.mcal .c.sel{background:var(--sea-soft);border-color:var(--sea)}
+.mcal .c.off{opacity:.4}
+.mcal .c .b{background:var(--saffron-soft);border-radius:5px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:90px 1fr 40px;gap:10px;align-items:center;font-size:14px}
+.bar .t{height:14px;border-radius:7px;background:var(--surface-2);overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--sea);border-radius:7px}
+.bar .t i.alt{background:var(--saffron)}
+.bar span:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.toggle{position:relative;width:42px;height:24px;border-radius:999px;background:var(--line);border:0;cursor:pointer;flex:none}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--surface);transition:left .15s}
+.toggle.on{background:var(--ok)}
+.toggle.on::after{left:21px}
+.price-inp{width:110px}
+.enq{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
+.enq + .enq{margin-top:14px}
+.enq h3{font-size:20px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(5,20,24,.45);z-index:50}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--bg);z-index:51;overflow-y:auto;padding:calc(22px + env(safe-area-inset-top,0px)) 24px calc(40px + env(safe-area-inset-bottom,0px));box-shadow:-10px 0 40px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:16px}
+.drawer h2{font-size:28px;font-weight:700}
+.dgrid{display:grid;grid-template-columns:130px 1fr;gap:9px 14px;font-size:15px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.dgrid dt{color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.dgrid dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.inline-box{background:var(--surface);border:1.5px solid var(--sea);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--sea-ink);color:#fff;padding:12px 20px;border-radius:999px;font-weight:600;z-index:60;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+
+@media (max-width:900px){
+  .hero-grid,.exp-hero,.exp-body,.book-grid{grid-template-columns:1fr}
+  .entries{grid-template-columns:1fr}
+  .summary,.sticky-cta{position:static}
+  .admin{grid-template-columns:1fr}
+  .side{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px 14px;gap:4px}
+  .side .who,.side .spacer{display:none}
+  .side button{white-space:nowrap;flex:none}
+  .kpis{grid-template-columns:1fr 1fr}
+  .grid-2,.two,.enq{grid-template-columns:1fr}
+  .main{padding:20px 16px 50px}
+  .mcal .c{min-height:56px}
+  .mcal .c .b{display:none}
+}
+@media (max-width:520px){
+  .wrap{padding-inline:16px}
+  .row2{grid-template-columns:1fr}
+  .panel{padding:18px}
+  .q{font-size:24px}
+  .hdr .wrap{gap:8px;padding-block:8px}
+  .nav{margin-left:0;width:100%;overflow-x:auto;flex-wrap:nowrap}
+  .nav button{white-space:nowrap}
+  .dgrid{grid-template-columns:1fr}
+  .cal{gap:4px}
+  .cal .d{border-radius:9px;font-size:14px}
+  .cal .d small{display:none}
+  .kpi .v{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="ribbon">Demo prototype by <b>iHubSA</b> for Hakuna Matuktuk. Sample data, no real payments or messages are sent.</div>
+<header class="hdr"><div class="wrap" id="hdr"></div></header>
+<main id="app"></main>
+<div id="layer"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- helpers ---------- */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'R'+Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return ds(d)};
+const toMin=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
+const fromMin=m=>pad(Math.floor(m/60)%24)+':'+pad(m%60);
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const fmtDate=s=>{const d=parse(s);return DAYS[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]};
+const fmtShort=s=>{const d=parse(s);return DAYS[d.getDay()].slice(0,3)+' '+d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3)};
+const TODAY=ds(new Date());
+const WA='+27 67 913 1590', WA_LINK='https://wa.me/27679131590';
+const IMG='https://hakunamatuktuk.co.za/wp-content/uploads/';
+
+/* ---------- catalogue (from Tours HKTT 15.09.26) ---------- */
+const COLLECTIONS=[
+ {id:'essential',name:'Hakuna Essential Collection',blurb:'Our core Southern Peninsula adventures, collected from your door in the Deep South.',note:'Attraction and reserve entry fees are not included in Essential Collection prices and are payable separately.'},
+ {id:'premium',name:'Premium Experiences',blurb:'More adventure. More included.',noteSea:'Your Cape Town transfers to and from the Deep South Peninsula and applicable entry fees are included.'},
+ {id:'signature',name:'Signature Experience',blurb:'The ultimate immersive Cape Peninsula experience, with everything taken care of.'},
+ {id:'capetown',name:'Cape Town Experiences',blurb:'The Mother City at your own pace, from the open air of your own Tuk Tuk.'},
+ {id:'grape',name:'Grape Escapes',blurb:'Sip, savour and discover the Cape.'},
+ {id:'custom',name:'Create Your Own Adventure',blurb:'Tailor-made and private experiences, quoted personally by the Hakuna team.'}
+];
+const COLL=Object.fromEntries(COLLECTIONS.map(c=>[c.id,c]));
+const RULES={
+ south:{label:"Pickup available in Simon's Town and the Deep South Peninsula.",zones:['south']},
+ capetown:{label:'Cape Town collection and return included.',zones:['south','city','constantia']},
+ city:{label:'Pickup available in the Cape Town City Bowl, Atlantic Seaboard and V&A Waterfront.',zones:['city']},
+ constantia:{label:'Pickup available in the Deep South and Constantia valley.',zones:['south','constantia']}
+};
+const ZONES={
+ south:["simon","fish hoek","kalk bay","muizenberg","st james","st. james","glencairn","noordhoek","kommetjie","scarborough","clovelly","sunny cove","sunnydale","capri","sun valley","misty cliffs","da gama","welcome glen","boulders","marina da gama","lakeside","castle rock","froggy farm","miller's point","millers point","smitswinkel","red hill","ocean view","masiphumelele","imhoff"],
+ city:["waterfront","v&a","green point","sea point","cbd","city bowl","city centre","gardens","tamboerskloof","bo-kaap","bo kaap","de waterkant","camps bay","bantry bay","clifton","oranjezicht","vredehoek","woodstock","mouille point","fresnaye","foreshore","cape town","bakoven","three anchor bay"],
+ constantia:["constantia","tokai","bergvliet","wynberg","claremont","newlands","kenilworth","hout bay","plumstead","meadowridge","steenberg","kirstenhof","retreat"]
+};
+const PICK_SUGGEST={south:["Simon's Town","Fish Hoek","Kalk Bay","Noordhoek","Muizenberg","Kommetjie"],capetown:["V&A Waterfront, Cape Town","Sea Point","Camps Bay","Simon's Town","Constantia"],city:["V&A Waterfront","Sea Point","Gardens","Camps Bay","De Waterkant"],constantia:["Constantia","Tokai","Fish Hoek","Noordhoek","Kalk Bay"]};
+const DEFAULT_BRING=['Hat','Sunscreen','Comfortable shoes','Camera','A sense of adventure'];
+const ALLDAYS=[0,1,2,3,4,5,6];
+
+const EXPERIENCES_SEED=[
+ {id:'cape-point-express',collection:'essential',name:'Cape Point Express',price:1500,unit:'per Tuk Tuk',hours:3,durationLabel:'3 hours',times:['09:00','10:00','11:00','12:00','13:00'],rule:'south',entryIncluded:false,transferIncluded:false,instant:true,active:true,img:'2026/04/WhatsApp-Image-2026-04-25-at-16.35.57.jpeg',
+  headline:'Cape Point. Three hours. One unforgettable adventure.',
+  short:'Short on time? The legendary lighthouse and the Cape of Good Hope sign, by open-air Tuk Tuk from Simon’s Town.',
+  desc:['Short on time, but determined to see one of the Cape’s most iconic landscapes? Climb aboard your Hakuna Matuktuk and let the adventure begin.','From Simon’s Town, we follow the spectacular False Bay coastline towards the wild beauty of the Cape Point Nature Reserve. Once inside the reserve, we make our way towards the legendary Cape Point Lighthouse perched dramatically above the meeting point of land and sea.','Then it’s on to the Cape of Good Hope, where you’ll have time to capture that all-important photograph at the famous sign before we wind our way back through the reserve.'],
+  includes:['Private Hakuna Matuktuk for up to 2 guests','Return collection from your residence or hotel within our operational area','Three-hour hosted Cape Point adventure','Access to scenic areas where larger tour vehicles cannot go','Cape Point Lighthouse','Cape of Good Hope','Wildlife and nature spotting','Your knowledgeable Hakuna host'],
+  excludes:['All Cape Point Nature Reserve entry fees (including driver)','The Flying Dutchman Funicular','Meals and refreshments','Gratuities'],
+  bring:['Valid passport or ID','Hat','Sunscreen','Warm jacket','Camera','A sense of adventure']},
+ {id:'cape-point-safari',collection:'essential',name:'Cape Point Tuk Tuk Safari',price:3500,unit:'per Tuk Tuk',hours:5,durationLabel:'5 hours',times:['08:30','09:00','10:00'],rule:'south',entryIncluded:false,transferIncluded:false,instant:true,active:true,img:'2026/04/20251129_083537.jpg',
+  headline:'Experience Cape Point the Hakuna way.',
+  short:'Into the wild heart of the reserve: zebra, eland, bontebok, fynbos, the lighthouse and a farm-stall lunch.',
+  desc:['Leave the crowds behind and venture into the wild heart of the Cape Peninsula, where our Tuk Tuks can take you into scenic areas and viewpoints that larger tour vehicles simply can’t reach.','Keep your eyes open: you could spot Cape Mountain zebra, eland, bontebok, tortoise, Cape fur seals and chacma baboons. Within the Cape of Good Hope section alone, more than 1,080 indigenous plant species have been recorded, with 14 found nowhere else on Earth.','We’ll explore the reserve, visit the Cape Point Lighthouse and continue to the Cape of Good Hope, then stop at a local farm stall for a light lunch before heading home.'],
+  includes:['Private Hakuna Matuktuk for up to 2 guests','Return collection within our operational area','Five-hour hosted Cape Point adventure','Access to scenic areas larger vehicles cannot go','Cape Point Lighthouse and Cape of Good Hope','Wildlife and nature spotting','Light lunch at a local farm stall','Your knowledgeable Hakuna host'],
+  excludes:['All Cape Point Nature Reserve entry fees (including driver)','The Flying Dutchman Funicular','Gratuities'],
+  bring:['Valid passport or ID','Hat','Sunscreen','Comfortable walking shoes','Swimsuit and towel','Warm jacket','Camera']},
+ {id:'south-peninsula',collection:'essential',name:'Five-Hour South Peninsula Experience',price:2800,unit:'per Tuk Tuk',hours:5,durationLabel:'5 hours',times:['09:00','10:00','11:00'],rule:'south',entryIncluded:false,transferIncluded:false,instant:true,active:true,img:'2026/09/IMG-20231227-WA0029-300x300.jpg',
+  headline:'One peninsula. Endless views.',
+  short:'Ostriches, Malawian coffee, Chapman’s Peak, Boyes Drive, Muizenberg’s beach huts and Kalk Bay harbour.',
+  desc:['Meander, explore and discover the South Peninsula at a wonderfully unhurried pace, from the wild Atlantic coastline to colourful beach huts, mountain passes, quirky farm stalls and the seaside charm of Kalk Bay.','We set off from Simon’s Town, stopping at Cape Point Ostrich Farm to say hello to Bonnie and Clyde, then Scarborough and Camel Rock before The Village Hub for a first cup of Malawian coffee on us.','Across the pass through Kommetjie to Imhoff Farm, up Chapman’s Peak, then Noordhoek, Fish Hoek and Boyes Drive (keep watch for sharks below) before Muizenberg and, finally, delicious Kalk Bay.'],
+  includes:['Private Hakuna Matuktuk for up to 2 guests','Five-hour hosted Peninsula adventure','Dedicated driver and Tuk Tuk','Your first cup of Malawian coffee on us'],
+  excludes:['Any entry fees (including driver)','Meals and refreshments','Gelato','Gratuities'],
+  bring:['Light jacket','Comfortable walking shoes','Swimsuit and towel','Sunscreen, hat and sunglasses']},
+ {id:'chappies-sundowners',collection:'essential',name:'Chapman’s Peak Tuk Tuk Sundowners',price:1750,unit:'per Tuk Tuk',hours:3,durationLabel:'3 hours',times:['17:00'],flexible:true,rule:'south',entryIncluded:false,transferIncluded:false,instant:true,active:true,img:'2026/09/IMG-20240119-WA0043-300x300.jpg',
+  headline:'114 curves. One spectacular coastline. One unforgettable sunset.',
+  short:'Golden hour on “Chappies” with a charcuterie board and champagne at a private lookout.',
+  desc:['Climb aboard and set off towards legendary Chapman’s Peak Drive. Stretching about 9 kilometres between Hout Bay and Noordhoek, it winds around the mountain in 114 curves, the Atlantic on one side and dramatic cliffs on the other.','As golden hour approaches, we make our way to a spectacular lookout point. Your sundowner charcuterie board awaits, with delicious snacks and champagne.','No crowds. No rush. No filter needed.'],
+  includes:['Private Hakuna Matuktuk for up to 2 guests','Return collection within our operational area','Three-hour hosted Chapman’s Peak adventure','Golden-hour lookout stops','Charcuterie board','Champagne (non-alcoholic options available)','Your knowledgeable Hakuna host'],
+  excludes:['Additional meals and refreshments','Gratuities'],bring:['Warm jacket','Camera','Your favourite person']},
+ {id:'penguins',collection:'essential',name:'African Penguin Experience',price:1600,unit:'per Tuk Tuk',hours:3,durationLabel:'Approx. 2–3 hours',times:['09:00','10:00','11:00','13:00','14:00'],rule:'south',entryIncluded:false,transferIncluded:false,instant:true,active:true,img:'2025/09/penguins.webp',
+  headline:'Penguins. Boulders. The ocean.',
+  short:'Boulders Beach by Tuk Tuk: critically endangered African Penguins, granite boulders and a swim in False Bay.',
+  desc:['Imagine arriving at Boulders Beach by Tuk Tuk, the ocean sparkling beside you, enormous granite boulders rising from the water and African Penguins wandering freely along the shoreline.','See them swimming, sunning themselves on the rocks and diving into the crystal waters of False Bay. The African Penguin is critically endangered, which makes seeing them in the wild even more special.','Take a dip, explore between the giant boulders and, if you’re lucky, find a penguin swimming nearby.'],
+  includes:['Private Hakuna Matuktuk for up to 2 guests','Return collection within our operating area','Scenic False Bay coastal journey','Visit to the Boulders Penguin Colony','Opportunity to swim at Boulders Beach','Knowledgeable Hakuna host'],
+  excludes:['All entry fees to Boulders Beach & Penguin Colony','Meals and refreshments','Gratuities'],
+  bring:['Swimsuit and towel','Sunscreen, hat and sunglasses','Valid passport or ID']},
+ {id:'coastal-discovery',collection:'premium',name:'Coastal Discovery Tuk Tuk Experience',price:6500,unit:'per Tuk Tuk',hours:4,durationLabel:'3–4 hours',times:['09:00','10:00','13:00'],rule:'capetown',entryIncluded:true,transferIncluded:true,instant:true,active:true,img:'2026/04/WhatsApp-Image-2026-04-30-at-09.55.05-1024x1024.jpeg',
+  headline:'The Cape’s coastline, beautifully curated.',
+  short:'Private transfer from Cape Town, Muizenberg coffee, Boulders penguins, gelato and a personal ostrich encounter.',
+  desc:['Your adventure begins with a private transfer from Cape Town to Muizenberg: colourful Victorian bathing huts, endless ocean views and an artisanal coffee.','We follow the curve of False Bay through St James, Kalk Bay and Fish Hoek to Boulders Beach, home of the African Penguin, then a gelato along the boardwalk.','A personal ostrich encounter follows, before the scenic route back via Boyes Drive.'],
+  includes:['Private Cape Town return transfers','Private Hakuna Matuktuk for up to 2 guests','Dedicated, knowledgeable Tuk Tuk host','All applicable attraction and reserve entry fees','Artisanal coffee','Gelato','African Penguin encounter','Personal ostrich encounter'],
+  excludes:['Additional food & beverages','Personal purchases','Gratuities'],bring:DEFAULT_BRING},
+ {id:'atelier',collection:'premium',name:'Chapman’s Peak Atelier Experience',price:5400,unit:'per Tuk Tuk',hours:4,durationLabel:'3–4 hours',times:['15:30'],flexible:true,rule:'capetown',entryIncluded:true,transferIncluded:true,instant:true,active:true,img:'2026/04/Lara-717x1024.jpeg',
+  headline:'Paint your own piece of the Cape.',
+  short:'Canvas, easel and bubbly at a private sunset spot above the Atlantic. Transfers from Cape Town included.',
+  desc:['A private transfer from Cape Town to Noordhoek, then the legendary Chapman’s Peak Drive, pausing at viewpoints overlooking Noordhoek Beach.','Then the Tuk Tuk becomes your travelling atelier. With canvas, easel and paints ready, capture the landscape in your own way, whether you’re an experienced artist or simply want to have fun with a paintbrush.','A gourmet charcuterie board and chilled bubbly are served as golden hour unfolds. As dusk settles, we pack up your artwork and descend into Hout Bay.'],
+  includes:['Private Cape Town return transfers','Private Hakuna Matuktuk for up to 2 guests','Dedicated knowledgeable Hakuna host','Toll fees','Gourmet charcuterie board','Bubbly (non-alcoholic option available)','Canvas, easel and painting setup'],
+  excludes:['Additional beverages','Personal purchases','Gratuities'],bring:['Warm jacket','Clothes you don’t mind painting in']},
+ {id:'ultimate',collection:'signature',name:'Ultimate Peninsula Tuk Tuk Adventure',price:10995,unit:'per Tuk Tuk',hours:8,durationLabel:'±8 hours',times:['08:00'],rule:'capetown',entryIncluded:true,transferIncluded:true,instant:true,active:true,img:'2026/04/WhatsApp-Image-2026-04-30-at-12.09.12-1024x1024.jpeg',
+  headline:'One day. The entire peninsula.',
+  short:'Penguins, Cape Point, the funicular, ostriches, Malawian coffee, a traditional braai and Chapman’s Peak.',
+  desc:['Your day begins with a private collection from your Cape Town hotel. We head to Muizenberg, follow the False Bay coast through Kalk Bay, and continue to Boulders Beach for the famous African Penguins.','Then into the Cape Point Nature Reserve: the lighthouse, the Flying Dutchman Funicular and the iconic Cape of Good Hope.','Meet the Cape’s curious ostriches, enjoy an authentic Malawian coffee experience, gather around the fire for a traditional South African braai, then ride Chapman’s Peak Drive to Hout Bay and back to Cape Town.'],
+  includes:['Private return transfers from Cape Town','Private Hakuna Matuktuk for up to 2 guests','Dedicated knowledgeable Hakuna host','Boulders Beach Penguin Colony entry','Cape Point Nature Reserve entry','Flying Dutchman Funicular','Traditional South African braai','Coffee experiences','Personal ostrich encounter','Chapman’s Peak Drive'],
+  excludes:['Optional Seal Island boat trip','Additional beverages','Personal purchases','Gratuities'],bring:DEFAULT_BRING},
+ {id:'discover-ct',collection:'capetown',name:'Discover Cape Town by Tuk Tuk',price:1200,unit:'per Tuk Tuk',hours:1,durationLabel:'1 or 2 hours',times:['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00'],rule:'city',entryIncluded:false,transferIncluded:false,instant:true,active:true,img:'2026/09/BoKaap-768x1024.jpg',
+  options:[{id:'1h',label:'1 hour',sub:'A relaxed introduction to the city’s iconic sights. Driving only, no scheduled stops.',price:1200,hours:1},{id:'2h',label:'2 hours',sub:'More time for the neighbourhoods, landmarks and character.',price:2400,hours:2}],
+  headline:'We’ll show you a different way to discover Cape Town.',
+  short:'V&A Waterfront, De Waterkant, Company’s Garden, the Castle and colourful Bo-Kaap.',
+  desc:['Your adventure begins at the V&A Waterfront, winding through Green Point and De Waterkant, then into the heart of the city: Company’s Garden, Greenmarket Square, the Castle of Good Hope and the colourful Bo-Kaap.','No packed tour bus. Just your own Tuk Tuk, your own host, and Cape Town at your pace.'],
+  includes:['Private Hakuna Matuktuk for up to 2 guests','Knowledgeable Hakuna host','Open-air sightseeing','Photo opportunities at selected locations'],
+  excludes:['Meals and refreshments','Attraction entry fees','Extended time outside the agreed itinerary','Gratuities'],bring:DEFAULT_BRING},
+ {id:'ct-city-discovery',collection:'capetown',name:'Cape Town City Discovery Experience',price:2800,unit:'per couple',hours:3,durationLabel:'Duration to confirm',times:['09:00','10:00','13:00'],rule:'city',entryIncluded:false,transferIncluded:false,instant:true,active:true,img:'',
+  headline:'The city, a little deeper.',
+  short:'A longer hosted city experience for two. Full itinerary to be supplied by Hakuna.',
+  desc:['Placeholder copy for the demo: Hakuna’s brief lists this experience at R2,800 per couple, but the itinerary has not been supplied yet. It can be written and edited from the admin Experiences screen without rebuilding the app.'],
+  includes:['Private Hakuna Matuktuk for 2 guests','Knowledgeable Hakuna host'],excludes:['Gratuities'],bring:DEFAULT_BRING},
+ {id:'grape-escape',collection:'grape',name:'Grape Escape Wine Experience',price:2750,unit:'per Tuk Tuk',hours:3,durationLabel:'3 hours',times:['10:00','11:00','13:00'],rule:'constantia',entryIncluded:false,transferIncluded:false,instant:true,active:true,img:'',fromPrice:true,
+  options:[{id:'classic',label:'Constantia Classic',sub:'Sample package: tastings at two estates.',price:2750,hours:3},{id:'pairing',label:'Tasting & Pairing',sub:'Sample package: tastings plus a chocolate or cheese pairing.',price:3250,hours:3},{id:'indulge',label:'Wine Country Indulgence',sub:'Sample package: three estates and a cellar tour.',price:3950,hours:4}],
+  headline:'Sip, savour and discover Constantia wine country.',
+  short:'An open-air Tuk Tuk along the Constantia Wine Route, with curated wine packages to choose from.',
+  desc:['Trade the ordinary for an open-air Tuk Tuk adventure through the iconic Constantia Wine Route, where beautiful vineyards, mountain views and exceptional South African wines come together.','Choose the package that suits your taste, settle in and let us take care of the driving while you enjoy the scenery, the stories and, of course, the wine.'],
+  includes:['Return Tuk Tuk transport within our operational area','Wine tasting at selected Constantia estates','Curated wine selections','Your knowledgeable Hakuna host'],
+  excludes:['Meals and refreshments','Personal purchases','Gratuities'],bring:DEFAULT_BRING},
+ {id:'tailor-made',collection:'custom',name:'Tailor-made Experiences',price:0,poa:true,unit:'POA',hours:4,durationLabel:'You decide',times:[],rule:'capetown',instant:false,active:true,img:'2026/04/WhatsApp-Image-2026-04-22-at-19.49.47.jpeg',
+  headline:'Your Cape, your way.',short:'Tell us what you’d love to do and we’ll design a private Tuk Tuk adventure around it.',desc:[],includes:[],excludes:[],bring:DEFAULT_BRING},
+ {id:'celebration',collection:'custom',name:'Private Celebration & Couples Experience',price:0,poa:true,unit:'POA',hours:4,durationLabel:'You decide',times:[],rule:'capetown',instant:false,active:true,img:'2026/04/WhatsApp-Image-2026-04-22-at-19.49.46-1.jpeg',
+  headline:'Birthdays, anniversaries and proposals.',short:'Picnics, braais, sushi and wine pairings, craft beer: a celebration built for two.',desc:[],includes:[],excludes:[],bring:DEFAULT_BRING},
+ {id:'charter',collection:'trip',name:'Private Tuk Tuk Trip',price:0,poa:true,unit:'quoted',hours:2,durationLabel:'Per quote',times:[],rule:'south',instant:false,active:true,hidden:true,img:'',headline:'',short:'',desc:[],includes:[],excludes:[],bring:DEFAULT_BRING}
+];
+
+/* ---------- state ---------- */
+const KEY='hkt-demo-v1';
+let S;
+function seed(){
+  const fleet=[
+    {id:'timon',name:'Timon',status:'available',note:'Licensed and insured'},
+    {id:'pumbaa',name:'Pumbaa',status:'available',note:'Licensed and insured'},
+    {id:'simba',name:'Simba',status:'unavailable',note:'Awaiting operating licence'}];
+  const hosts=['Jenny','Sam'];
+  const b=[];let seq=1001;
+  const mk=(o)=>{const e=EXPERIENCES_SEED.find(x=>x.id===o.exp);const opt=e.options&&o.opt?e.options.find(x=>x.id===o.opt):null;const g=(o.adults||2)+(o.children||0);const tuks=Math.ceil(g/2);
+    b.push({ref:'',expId:o.exp,opt:o.opt||null,date:o.date,time:o.time,adults:o.adults||2,children:o.children||0,tuks,vehicles:o.v,pickup:o.pickup,zone:o.zone||'in',first:o.first,last:o.last,email:(o.first+'.'+o.last).toLowerCase().replace(/[^a-z.]/g,'')+'@example.com',phone:o.phone||'+44 7700 900'+String(100+b.length).slice(-3),notes:o.notes||'',amount:(opt?opt.price:e.price)*tuks,payment:o.pay||'PAID',status:o.status||'Confirmed',source:o.source,host:o.host||'Jenny',created:o.created||addDays(o.date,-9)})};
+  // past bookings (deterministic)
+  const exIds=['cape-point-express','penguins','chappies-sundowners','south-peninsula','cape-point-safari','discover-ct','coastal-discovery','grape-escape','atelier','ultimate'];
+  const srcPool=[].concat(Array(22).fill('Website'),Array(11).fill('WhatsApp'),Array(7).fill('Hotels'),Array(5).fill('DMC'),Array(3).fill('Viator'),Array(1).fill('Airbnb'));
+  const fn=['Emma','Lukas','Aisha','Pierre','Sofia','James','Thandi','Kenji','Maria','Oliver','Priya','Lars','Chloe','Daniel','Naledi','Marco','Ingrid','Tom','Zanele','Ruth'];
+  const ln=['Smith','Becker','Okafor','Dubois','Rossi','Walker','Nkosi','Tanaka','García','Brown','Patel','Johansson','Martin','Cohen','Dlamini','Bianchi','Larsen','Hughes','Mokoena','Fischer'];
+  let r=7;const rnd=()=>{r=(r*9301+49297)%233280;return r/233280};
+  for(let i=0;i<srcPool.length;i++){
+    const exp=exIds[Math.floor(rnd()*exIds.length)];const e=EXPERIENCES_SEED.find(x=>x.id===exp);
+    const date=addDays(TODAY,-(2+Math.floor(rnd()*70)));const four=rnd()<.15;
+    const cancelled=rnd()<.06;
+    mk({exp,opt:e.options?e.options[0].id:null,date,time:e.times[0],adults:four?4:2,v:four?['timon','pumbaa']:[rnd()<.5?'timon':'pumbaa'],pickup:e.rule==='city'?'V&A Waterfront':(e.rule==='capetown'?'Sea Point':"Simon's Town"),first:fn[i%20],last:ln[(i*7)%20],source:srcPool[(i*13)%srcPool.length],status:cancelled?'Cancelled':'Completed',pay:cancelled?'REFUNDED':'PAID',host:rnd()<.7?'Jenny':'Sam'});
+  }
+  // upcoming
+  mk({exp:'cape-point-express',date:TODAY,time:'09:00',v:['timon'],pickup:"Quayside, Simon's Town",first:'John',last:'Smith',source:'Website',host:'Jenny',notes:'Celebrating 10th anniversary'});
+  mk({exp:'penguins',date:TODAY,time:'10:00',v:['pumbaa'],pickup:"Glencairn guesthouse",first:'Hannah',last:'Jones',source:'WhatsApp',host:'Sam'});
+  mk({exp:'chappies-sundowners',date:TODAY,time:'17:00',v:['timon'],pickup:'Noordhoek Village',first:'Ama',last:'Williams',source:'Hotels',host:'Jenny',notes:'One guest vegetarian'});
+  mk({exp:'ultimate',date:addDays(TODAY,1),time:'08:00',v:['timon'],pickup:'Hotel, V&A Waterfront, Cape Town',zone:'in',first:'Klaus',last:'Müller',source:'DMC',host:'Jenny'});
+  mk({exp:'discover-ct',opt:'2h',date:addDays(TODAY,1),time:'10:00',v:['pumbaa'],pickup:'Sea Point',first:'Ravi',last:'Patel',source:'Airbnb',host:'Sam'});
+  mk({exp:'south-peninsula',date:addDays(TODAY,2),time:'09:00',adults:2,children:2,v:['timon','pumbaa'],pickup:'Fish Hoek Beach',first:'Chidi',last:'Okafor',source:'Viator',host:'Jenny',notes:'Two children aged 8 and 11'});
+  mk({exp:'grape-escape',opt:'pairing',date:addDays(TODAY,3),time:'11:00',v:['timon'],pickup:'Constantia',first:'Claire',last:'Dubois',source:'Website',host:'Sam'});
+  mk({exp:'coastal-discovery',date:addDays(TODAY,4),time:'09:00',v:['pumbaa'],pickup:'Camps Bay',first:'Erik',last:'Johansson',source:'Hotels',host:'Jenny'});
+  mk({exp:'atelier',date:addDays(TODAY,4),time:'15:30',v:['timon'],pickup:'Gardens, Cape Town',first:'Giulia',last:'Rossi',source:'Website',host:'Sam'});
+  mk({exp:'cape-point-safari',date:addDays(TODAY,6),time:'09:00',v:['timon'],pickup:'Kalk Bay',first:'Kavitha',last:'Naidoo',source:'WhatsApp',host:'Jenny',pay:'PENDING',status:'Pending payment'});
+  b.sort((x,y)=>(x.created+x.date).localeCompare(y.created+y.date));
+  b.forEach(x=>x.ref='HM-'+(seq++));
+  const enquiries=[
+    {id:'EQ-201',kind:'celebration',created:addDays(TODAY,-1),date:addDays(TODAY,12),time:'16:30',guests:2,pickup:'Fish Hoek',wish:'Surprise proposal at sunset. Would love a picnic, a photographer if possible, and somewhere private on Chapman’s Peak.',occasion:'Proposal',duration:'Half day (3–4 hours)',budget:'R6,000 – R8,000',first:'Daniel',last:'Cohen',email:'daniel.cohen@example.com',phone:'+27 82 555 0143',status:'New',quote:null},
+    {id:'EQ-202',kind:'trip',created:addDays(TODAY,-2),date:addDays(TODAY,5),time:'18:00',guests:2,pickup:"Simon's Town",dropoff:'Kalk Bay harbour (return at 21:30)',wish:'Dinner in Kalk Bay and back.',occasion:'',duration:'',budget:'',first:'Sarah',last:'Hughes',email:'sarah.hughes@example.com',phone:'+27 72 555 0177',status:'Proposal sent',quote:{amount:1400,hours:4,note:'Return Tuk Tuk trip with a 3.5-hour wait while you dine.'}}
+  ];
+  return {v:1,exps:JSON.parse(JSON.stringify(EXPERIENCES_SEED)),fleet,hosts,bookings:b,enquiries,seq,eqSeq:203};
+}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){const s=JSON.parse(raw);if(s&&s.v===1)return s}}catch(e){}return seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+S=load();
+
+const U={view:'home',expId:null,d:null,admin:{tab:'today',filter:'today',sel:null,month:TODAY.slice(0,7),calDay:TODAY,q:'',status:'all',editExp:null,quoteFor:null,adding:false,msgSel:null},lastRef:null,pay:null,enqDone:null,proposal:null,drawerMode:null};
+const X=id=>S.exps.find(e=>e.id===id);
+
+/* ---------- availability engine ---------- */
+const BUFFER=30; // minutes between bookings for travel/turnaround
+function hoursOf(b){const e=X(b.expId);const o=e&&e.options&&b.opt?e.options.find(o=>o.id===b.opt):null;return b.hours||(o&&o.hours)||(e?e.hours:2)}
+function activeFleet(){return S.fleet.filter(v=>v.status==='available').map(v=>v.id)}
+function usedVehicles(date,time,hours,exclude){
+  const s=toMin(time),en=s+hours*60+BUFFER,used=new Set();
+  S.bookings.forEach(b=>{if(b.date!==date||b.status==='Cancelled'||b.ref===exclude)return;const bs=toMin(b.time),be=bs+hoursOf(b)*60+BUFFER;if(bs<en&&s<be)(b.vehicles||[]).forEach(v=>used.add(v))});
+  return used;
+}
+function freeVehicles(date,time,hours,exclude){const u=usedVehicles(date,time,hours,exclude);return activeFleet().filter(v=>!u.has(v))}
+function optOf(e,optId){return e.options?(e.options.find(o=>o.id===optId)||e.options[0]):null}
+function durOf(e,optId){const o=optOf(e,optId);return o?o.hours:e.hours}
+function unitPrice(e,optId){const o=optOf(e,optId);return o?o.price:e.price}
+function minDate(){return addDays(TODAY,1)}
+function dateState(e,optId,date,tuks){
+  if(date<minDate())return {ok:false,why:'past'};
+  if(date>addDays(TODAY,365))return {ok:false,why:'far'};
+  const h=durOf(e,optId);const best=Math.max(0,...e.times.map(t=>freeVehicles(date,t,h).length));
+  return {ok:best>=tuks,free:best};
+}
+const tuksFor=g=>Math.max(1,Math.ceil(g/2));
+function zoneOf(text){const t=(text||'').toLowerCase();if(!t.trim())return null;for(const z of ['south','constantia','city'])if(ZONES[z].some(k=>t.includes(k)))return z;return 'unknown'}
+function pickupCheck(e,text){const z=zoneOf(text);if(!z)return null;const ok=RULES[e.rule].zones.includes(z);return ok?'in':'out'}
+const vname=id=>(S.fleet.find(v=>v.id===id)||{name:id}).name;
+
+/* ---------- drawn fallback scene (shows when photos can't load) ---------- */
+let gid=0;
+function scene(seed){
+  let h=0;for(const c of seed)h=(h*31+c.charCodeAt(0))>>>0;
+  const a=(h%100)/100, b=((h>>7)%100)/100, id='g'+(gid++);
+  let p1='M0 250',p2='M0 250';
+  for(let x=0;x<=400;x+=10){const y1=118+Math.sin(x/55+a*6)*26+Math.sin(x/19+b*4)*7-(x>120+a*140&&x<230+a*140?28*Math.sin((x-120-a*140)/110*Math.PI):0);const y2=150+Math.sin(x/40+b*5)*12+Math.sin(x/13)*3;p1+=' L'+x+' '+y1.toFixed(1);p2+=' L'+x+' '+y2.toFixed(1)}
+  p1+=' L400 250 Z';p2+=' L400 250 Z';
+  const sx=60+a*280;
+  return `<svg viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky-a)"/><stop offset="1" style="stop-color:var(--sky-b)"/></linearGradient></defs><rect width="400" height="250" fill="url(#${id})"/><circle cx="${sx.toFixed(0)}" cy="${(70+b*30).toFixed(0)}" r="22" style="fill:var(--saffron)" opacity=".9"/><path d="${p1}" style="fill:var(--hill)"/><path d="${p2}" style="fill:var(--hill-2)"/><rect y="182" width="400" height="68" style="fill:var(--water)"/><path d="M0 196 Q 50 190 100 196 T 200 196 T 300 196 T 400 196" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/><path d="M0 214 Q 50 208 100 214 T 200 214 T 300 214 T 400 214" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="2"/></svg>`;
+}
+function photo(e,cls=''){return `<div class="ph ${cls}">${scene(e.id)}${e.img?`<img src="${IMG+e.img}" alt="${esc(e.name)}" loading="lazy" onerror="this.remove()">`:''}</div>`}
+function tukIcon(on=true,size=34){const f=on?'var(--saffron)':'var(--surface)';return `<svg width="${size}" height="${size*0.78}" viewBox="0 0 46 36" aria-hidden="true"><path d="M6 8 Q6 3 11 3 H32 Q37 3 39 8 L42 20 Q44 22 44 25 V27 H4 V12 Q4 8 6 8Z" style="fill:${f};stroke:var(--ink)" stroke-width="2" stroke-linejoin="round"/><path d="M8 9 H22 V18 H8Z M25 9 H35 L38 18 H25Z" style="fill:var(--surface);stroke:var(--ink)" stroke-width="1.6"/><circle cx="12" cy="29" r="4.5" style="fill:var(--ink)"/><circle cx="36" cy="29" r="4.5" style="fill:var(--ink)"/></svg>`}
+
+/* ---------- header ---------- */
+function renderHeader(){
+  const v=U.view;const isAdmin=v==='admin';
+  document.getElementById('hdr').innerHTML=`
+   <button class="brand" data-act="go" data-v="home" aria-label="Hakuna Matuktuk home"><span class="brand-mark">${tukIcon(false,26)}</span><span><span class="brand-name">Hakuna Matuktuk</span><span class="brand-sub">${isAdmin?'Operations console':'Private Tuk Tuk adventures'}</span></span></button>
+   <nav class="nav">${isAdmin?`<button data-act="go" data-v="home">View public site</button>`:`
+     <button data-act="go" data-v="experiences" class="${v==='experiences'||v==='exp'?'on':''}">Experiences</button>
+     <button data-act="go" data-v="custom" class="${v==='custom'?'on':''}">Create your own</button>
+     <button data-act="go" data-v="trip" class="${v==='trip'?'on':''}">Book a trip</button>
+     <button data-act="go" data-v="admin" class="admin-link">Admin</button>`}
+   </nav>`;
+}
+
+/* ---------- public views ---------- */
+function vHome(){
+  const ult=X('ultimate');
+  return `<section class="hero"><div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow" style="color:var(--coral)">Fish Hoek · Cape Peninsula</div>
+      <h1 style="margin-top:14px">Getting there should be <em>part of the adventure.</em></h1>
+      <p class="lead">Private, hosted Tuk Tuk tours along the Southern Peninsula and Cape Town. Choose your adventure, pick your date, and we’ll take care of the rest.</p>
+      <div class="hero-ctas"><button class="btn btn-go" data-act="go" data-v="experiences">Book a Tuk Tuk</button><a class="btn btn-line" href="${WA_LINK}" target="_blank" rel="noopener">WhatsApp ${WA}</a></div>
+      <div class="road" aria-hidden="true"><span class="tuk">${tukIcon(true,52)}</span></div>
+      <div class="trust"><span><i></i>KFM Best of the Cape, Top 5 Adventure 2025 & 2026</span><span><i></i>Female-owned</span><span><i></i>Private, fully insured, local hosts</span></div>
+    </div>
+    <div style="position:relative">${photo(ult,'hero-ph')}<div class="hero-badge"><b>${esc(ult.name)}</b>${esc(ult.durationLabel)} · from ${money(ult.price)} per Tuk Tuk</div></div>
+  </div></section>
+  <section><div class="wrap entries">
+    <button class="entry" data-act="go" data-v="experiences"><span class="eyebrow">Book instantly</span><h3>Explore experiences</h3><p class="muted">Browse Hakuna’s curated experiences, from a 3-hour Cape Point dash to the full-day Ultimate Peninsula.</p><span class="go">See all experiences →</span></button>
+    <button class="entry" data-act="go" data-v="custom"><span class="eyebrow">Personal quote</span><h3>Create your own adventure</h3><p class="muted">Tailor-made private experiences, celebrations and couples’ days. Tell us your idea, we’ll send a proposal.</p><span class="go">Request your adventure →</span></button>
+    <button class="entry" data-act="go" data-v="trip"><span class="eyebrow">Charter</span><h3>Book a trip</h3><p class="muted">A pre-booked Tuk Tuk journey within our operating areas: dinner in Kalk Bay, a beach day, a lift with a view.</p><span class="go">Request a trip →</span></button>
+  </div></section>
+  ${collectionsHTML(['signature','premium','essential'])}
+  <section class="section coll-band"><div class="wrap" style="display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center">
+    <div class="eyebrow">How booking works</div>
+    <div class="path"><span>Discover</span><span class="arrow">→</span><span>Choose</span><span class="arrow">→</span><span>Book</span><span class="arrow">→</span><span>Pay</span><span class="arrow">→</span><span>Adventure</span></div>
+    <p class="muted" style="max-width:56ch">Every Tuk Tuk is private for up to 2 guests. Bringing more people? We work out how many Tuk Tuks you need and assign them for you.</p>
+    <button class="btn btn-go" data-act="go" data-v="experiences" style="margin-top:6px">Book a Tuk Tuk</button>
+  </div></section>`;
+}
+function cardHTML(e){
+  const price=e.poa?'POA':(e.options||e.fromPrice?'from ':'')+money(e.price);
+  return `<button class="card" data-act="exp" data-id="${e.id}">${photo(e)}<div class="card-body"><span class="tag ${e.collection}">${esc(COLL[e.collection].name.replace('Hakuna ',''))}</span><h3>${esc(e.name)}</h3><p class="muted" style="font-size:15px">${esc(e.short)}</p><div class="meta"><span>${esc(e.durationLabel)}</span><span class="price">${price}${e.poa?'':` <small class="muted" style="font-family:var(--f-body);font-size:13px;font-weight:500">${esc(e.unit)}</small>`}</span></div></div></button>`;
+}
+function collectionsHTML(ids){
+  return ids.map(cid=>{const c=COLL[cid];const list=S.exps.filter(e=>e.collection===cid&&e.active&&!e.hidden);if(!list.length)return '';
+    return `<section class="section coll-band"><div class="wrap"><div class="sec-head"><div><div class="eyebrow">${list.length} experience${list.length>1?'s':''}</div><h2>${esc(c.name)}</h2><p>${esc(c.blurb)}</p></div>${c.note?`<div class="note"><b>Good to know</b><span>${esc(c.note)}</span></div>`:''}${c.noteSea?`<div class="note sea"><b>Included</b><span>${esc(c.noteSea)}</span></div>`:''}</div><div class="cards">${list.map(cardHTML).join('')}</div></div></section>`}).join('');
+}
+function vExperiences(){
+  return `<section class="hero" style="padding-bottom:0"><div class="wrap"><div class="eyebrow">Book a Tuk Tuk</div><h1 style="font-size:clamp(36px,5vw,58px);font-weight:700;margin-top:10px">Choose your adventure.</h1><p class="muted" style="font-size:18px;margin-top:10px;max-width:60ch">Every experience is private for up to 2 guests per Tuk Tuk, with your own Hakuna host.</p></div></section>
+  ${collectionsHTML(['essential','premium','signature','capetown','grape','custom'])}`;
+}
+function vExp(){
+  const e=X(U.expId);if(!e)return vHome();
+  const enquiry=!e.instant||e.poa;
+  const price=e.poa?'Price on application':`${e.options||e.fromPrice?'From ':''}${money(e.price)} <small>${esc(e.unit)}</small>`;
+  const cta=enquiry?`<button class="btn btn-go" data-act="go" data-v="custom" data-kind="${e.id}">Request your adventure</button>`:`<button class="btn btn-go" data-act="book" data-id="${e.id}">Book this experience</button>`;
+  return `<div class="wrap"><button class="back" data-act="go" data-v="experiences">← All experiences</button>
+  <div class="exp-hero">${photo(e)}<div>
+    <span class="tag ${e.collection}">${esc(COLL[e.collection].name)}</span>
+    <h1 class="exp-title">${esc(e.name)}</h1>
+    <div class="exp-price">${price}</div>
+    <div class="facts"><span class="fact">Private for up to 2 guests</span><span class="fact">${esc(e.durationLabel)}</span>${e.transferIncluded?'<span class="fact">Cape Town transfers included</span>':''}${e.entryIncluded?'<span class="fact">Entry fees included</span>':''}</div>
+    <p class="headline">${esc(e.headline)}</p>
+    <p class="muted" style="margin-top:8px">${esc(e.short)}</p>
+    <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap">${cta}<a class="btn btn-line" href="${WA_LINK}" target="_blank" rel="noopener">Ask on WhatsApp</a></div>
+  </div></div>
+  <div class="exp-body"><div class="prose">${e.desc.map(p=>`<p>${esc(p)}</p>`).join('')||`<p>${esc(e.short)}</p>`}
+    ${e.options?`<div class="side-card" style="margin-top:8px"><h4>Choose your package</h4>${e.options.map(o=>`<div style="display:flex;justify-content:space-between;gap:12px"><div><b>${esc(o.label)}</b><div class="muted" style="font-size:14px">${esc(o.sub)}</div></div><b class="num">${money(o.price)}</b></div>`).join('')}</div>`:''}
+  </div>
+  <aside class="sticky-cta"><div class="side-card">
+    ${e.includes.length?`<div><h4>Your experience includes</h4><ul class="ticks" style="margin-top:10px">${e.includes.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`:''}
+    ${e.excludes.length?`<div><h4>Please note</h4><ul class="ticks x" style="margin-top:10px">${e.excludes.map(i=>`<li>${esc(i)}</li>`).join('')}<li>Additional travel charges may apply for pickups outside our normal operating area.</li></ul></div>`:''}
+    <div class="pick-rule" style="margin:0"><b>Pickup:</b> ${esc(RULES[e.rule].label)}</div>
+    ${cta}
+  </div></aside></div></div>`;
+}
+
+/* ---------- booking flow ---------- */
+const STEPS=['Date','Time','Guests','Pickup','Your details','Review'];
+function newDraft(id){const e=X(id);return {expId:id,opt:e.options?e.options[0].id:null,date:null,time:e.flexible?e.times[0]:null,adults:2,children:0,pickup:'',first:'',last:'',email:'',phone:'',notes:'',agree:false,step:0,month:minDate().slice(0,7),err:''}}
+function dGuests(d){return d.adults+d.children}
+function stepValid(i){
+  const d=U.d,e=X(d.expId),t=tuksFor(dGuests(d));
+  if(i===0)return d.date?'':'Choose a date to continue.';
+  if(i===1){if(!d.time)return 'Choose a start time.';if(freeVehicles(d.date,d.time,durOf(e,d.opt)).length<1)return 'That time is fully booked. Choose another.';return ''}
+  if(i===2){if(dGuests(d)<1)return 'Add at least one guest.';if(d.adults<1)return 'At least one adult must travel.';const f=freeVehicles(d.date,d.time,durOf(e,d.opt)).length;if(f<t)return `You need ${t} Tuk Tuks, but only ${f} ${f===1?'is':'are'} free at ${d.time} on ${fmtShort(d.date)}. Go back and choose another time or date.`;return ''}
+  if(i===3)return d.pickup.trim().length>2?'':'Tell us where to collect you.';
+  if(i===4){if(!d.first.trim()||!d.last.trim())return 'Add your first name and surname.';if(!/^\S+@\S+\.\S+$/.test(d.email))return 'Add a valid email address.';if(d.phone.replace(/\D/g,'').length<9)return 'Add a mobile or WhatsApp number.';return ''}
+  if(i===5)return d.agree?'':'Please confirm you agree to the booking terms.';
+  return '';
+}
+function vBook(){
+  const d=U.d,e=X(d.expId);
+  const stepsBar=STEPS.map((s,i)=>{let ok=true;for(let k=0;k<i;k++)if(stepValid(k)){ok=false;break}return `<button class="${i===d.step?'on':(i<d.step?'is-done':'')}" ${ok?`data-act="step" data-i="${i}"`:'disabled'}>${i+1}. ${s}</button>`}).join('');
+  return `<div class="wrap"><button class="back" data-act="exp" data-id="${e.id}">← ${esc(e.name)}</button>
+  <div class="book-grid"><div class="panel"><div class="steps">${stepsBar}</div><div id="stepbody">${stepHTML()}</div>
+    <div class="foot"><button class="btn btn-line" data-act="prev" ${d.step===0?'disabled':''}>Back</button>
+    ${d.step<5?`<button class="btn btn-sea" data-act="next">Continue</button>`:`<button class="btn btn-go" data-act="topay">Proceed to payment</button>`}</div>
+    <div class="err" id="steperr" role="alert">${esc(d.err||'')}</div></div>
+  <aside class="summary" id="sum">${summaryHTML()}</aside></div></div>`;
+}
+function stepHTML(){
+  const d=U.d,e=X(d.expId),t=tuksFor(dGuests(d)),h=durOf(e,d.opt);
+  if(d.step===0){
+    const [y,m]=d.month.split('-').map(Number);const first=new Date(y,m-1,1);const off=(first.getDay()+6)%7;const n=new Date(y,m,0).getDate();
+    let cells='';for(let i=0;i<off;i++)cells+='<span class="d blank"></span>';
+    for(let dd=1;dd<=n;dd++){const s=y+'-'+pad(m)+'-'+pad(dd);const st=dateState(e,d.opt,s,t);cells+=`<button class="d ${d.date===s?'sel':''}" ${st.ok?`data-act="date" data-d="${s}"`:'disabled'} aria-label="${fmtDate(s)}${st.ok?'':' unavailable'}">${dd}${st.ok&&st.free===1&&activeFleet().length>1?'<small>1 left</small>':''}</button>`}
+    const prevOk=d.month>minDate().slice(0,7);
+    return `${e.options?`<h2 class="q">Choose your ${e.id==='discover-ct'?'adventure':'package'}</h2><div class="opts">${e.options.map(o=>`<button class="opt ${d.opt===o.id?'sel':''}" data-act="opt" data-o="${o.id}"><span><b>${esc(o.label)}</b><br><span class="muted" style="font-size:14px">${esc(o.sub)}</span></span><b class="num">${money(o.price)}</b></button>`).join('')}</div>`:''}
+    <h2 class="q">When would you like to go?</h2><p class="q-sub">Greyed-out dates are fully booked or unavailable. Showing availability for ${t} Tuk Tuk${t>1?'s':''} (${dGuests(d)} guests).</p>
+    <div class="cal-head"><button class="icon-btn" data-act="month" data-dir="-1" ${prevOk?'':'disabled'} aria-label="Previous month">‹</button><b>${MONTHS[m-1]} ${y}</b><button class="icon-btn" data-act="month" data-dir="1" aria-label="Next month">›</button></div>
+    <div class="cal">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<span class="dow">${x}</span>`).join('')}${cells}</div>
+    <div class="legend"><span><i style="background:var(--surface);border:1.5px solid var(--line)"></i>Available</span><span><i style="background:var(--surface-2)"></i>Unavailable</span><span><i style="background:var(--sea)"></i>Selected</span></div>
+    <p class="muted" style="font-size:14px;margin-top:14px">Booking for today? Message us on WhatsApp at <b>${WA}</b>.</p>`;
+  }
+  if(d.step===1){
+    if(e.flexible){const f=freeVehicles(d.date,d.time||e.times[0],h).length;
+      return `<h2 class="q">What time would you like to start?</h2><p class="q-sub">${fmtDate(d.date)}. This experience follows the sunset, so we’ll confirm your exact departure time.</p>
+      <div class="field" style="max-width:220px"><label for="ftime">Preferred start time</label><input class="inp" type="time" id="ftime" data-bind="time" value="${esc(d.time||'')}" min="14:00" max="19:00" step="900"></div>
+      <div class="zone ${f>=1?'in':'out'}"><span class="dot"></span><span>${f>=1?`${f} Tuk Tuk${f>1?'s':''} free around this time.`:'No Tuk Tuks free around this time. Try another time or date.'}</span></div>`}
+    return `<h2 class="q">What time would you like to start?</h2><p class="q-sub">${fmtDate(d.date)} · ${esc(e.durationLabel)}. Only available start times are shown.</p>
+    <div class="slots">${e.times.map(tm=>{const f=freeVehicles(d.date,tm,h).length;return `<button class="slot ${d.time===tm?'sel':''}" ${f>=1?`data-act="time" data-t="${tm}"`:'disabled'}><b>${tm}</b><small>${f>=1?`${f} Tuk Tuk${f>1?'s':''} free`:'Fully booked'}</small></button>`}).join('')}</div>`;
+  }
+  if(d.step===2){
+    const g=dGuests(d);const f=freeVehicles(d.date,d.time,h).length;
+    let icons='';for(let i=0;i<t;i++)icons+=tukIcon(true,40);
+    return `<h2 class="q">Who’s coming?</h2><p class="q-sub">Each Hakuna Matuktuk is private for up to 2 guests. Hakuna assigns the vehicles.</p>
+    <div class="counter"><div><b>Adults</b><div class="muted" style="font-size:14px">13 years and older</div></div><div class="ctl"><button class="icon-btn" data-act="guest" data-k="adults" data-n="-1" aria-label="Fewer adults">−</button><b>${d.adults}</b><button class="icon-btn" data-act="guest" data-k="adults" data-n="1" aria-label="More adults">+</button></div></div>
+    <div class="counter"><div><b>Children</b><div class="muted" style="font-size:14px">Each child takes a seat</div></div><div class="ctl"><button class="icon-btn" data-act="guest" data-k="children" data-n="-1" aria-label="Fewer children">−</button><b>${d.children}</b><button class="icon-btn" data-act="guest" data-k="children" data-n="1" aria-label="More children">+</button></div></div>
+    <div class="tuks"><div class="tuk-row">${icons}</div><div><div class="eq">${g} guest${g>1?'s':''} = ${t} Tuk Tuk${t>1?'s':''}</div><div style="font-size:14px">${money(unitPrice(e,d.opt))} × ${t} = <b>${money(unitPrice(e,d.opt)*t)}</b></div></div></div>
+    ${f<t?`<div class="zone out" style="margin-top:12px"><span class="dot"></span><span>Only ${f} Tuk Tuk${f===1?' is':'s are'} free at ${d.time} on ${fmtShort(d.date)}. Go back to choose another time or date.</span></div>`:''}`;
+  }
+  if(d.step===3){
+    const sug=PICK_SUGGEST[e.rule]||[];
+    return `<h2 class="q">Where should we collect you?</h2><p class="q-sub">Your hotel, guesthouse or address.</p>
+    <div class="pick-rule"><b>${esc(e.name)}:</b> ${esc(RULES[e.rule].label)}</div>
+    <div class="field"><label for="pickup">Hotel, accommodation or address</label><input class="inp" id="pickup" data-bind="pickup" value="${esc(d.pickup)}" placeholder="e.g. Quayside Hotel, Simon's Town" autocomplete="street-address"></div>
+    <div class="chips">${sug.map(s=>`<button class="chip" data-act="pick" data-p="${esc(s)}">${esc(s)}</button>`).join('')}<button class="chip" data-act="pick" data-p="Stellenbosch">Stellenbosch</button></div>
+    <div id="zone" style="margin-top:14px">${zoneHTML()}</div>`;
+  }
+  if(d.step===4){
+    return `<h2 class="q">Your details</h2><p class="q-sub">We’ll send your confirmation by email and WhatsApp.</p>
+    <div class="row2"><div class="field"><label for="first">First name</label><input class="inp" id="first" data-bind="first" value="${esc(d.first)}" autocomplete="given-name"></div><div class="field"><label for="last">Surname</label><input class="inp" id="last" data-bind="last" value="${esc(d.last)}" autocomplete="family-name"></div></div>
+    <div class="row2"><div class="field"><label for="email">Email</label><input class="inp" type="email" id="email" data-bind="email" value="${esc(d.email)}" autocomplete="email"></div><div class="field"><label for="phone">Mobile / WhatsApp number</label><input class="inp" type="tel" id="phone" data-bind="phone" value="${esc(d.phone)}" placeholder="+27 ..." autocomplete="tel"></div></div>
+    <div class="field"><label for="notes">Special requests or dietary requirements <span class="muted" style="font-weight:500">(optional)</span></label><textarea class="inp" id="notes" data-bind="notes">${esc(d.notes)}</textarea></div>
+    <button class="chip" data-act="fill">Fill with sample details</button>`;
+  }
+  // review
+  return `<h2 class="q">Your Hakuna adventure</h2><p class="q-sub">Check everything before you pay.</p>
+  <dl class="kv" style="font-size:16px">${reviewRows()}</dl>
+  <div class="total"><span>Total</span><b>${money(unitPrice(e,d.opt)*t)}</b></div>
+  ${!e.entryIncluded&&!e.poa?`<div class="note" style="margin-top:14px"><b>Please note</b><span>Attraction and reserve entry fees are not included and are payable separately on the day.</span></div>`:''}
+  <label class="check"><input type="checkbox" id="agree" data-bind="agree" ${d.agree?'checked':''}><span>I have read and agree to the booking terms, including the cancellation policy.</span></label>`;
+}
+function reviewRows(){const d=U.d,e=X(d.expId),t=tuksFor(dGuests(d));const o=optOf(e,d.opt);const z=pickupCheck(e,d.pickup);
+  return `<dt>Experience</dt><dd>${esc(e.name)}${o?` (${esc(o.label)})`:''}</dd><dt>Date</dt><dd>${fmtDate(d.date)}</dd><dt>Time</dt><dd>${esc(d.time)}${e.flexible?' (to be confirmed)':''}</dd><dt>Guests</dt><dd>${dGuests(d)}${d.children?` (${d.children} child${d.children>1?'ren':''})`:''}</dd><dt>Pickup</dt><dd>${esc(d.pickup)}${z==='out'?'<br><span style="color:var(--warn);font-weight:600">Travel charges may apply</span>':''}</dd><dt>Duration</dt><dd>${esc(o&&e.options?o.label:e.durationLabel)}</dd><dt>Tuk Tuks</dt><dd>${t} × Private Tuk Tuk</dd><dt>Lead guest</dt><dd>${esc(d.first+' '+d.last)}</dd>`}
+function zoneHTML(){const d=U.d,e=X(d.expId);const z=pickupCheck(e,d.pickup);if(!z)return '';
+  return z==='in'?`<div class="zone in"><span class="dot"></span><span><b>Within our operating area.</b> No additional charge.</span></div>`:`<div class="zone out"><span class="dot"></span><span><b>Outside our normal operating area.</b> Additional travel charges may apply. We’ll confirm any charge with you before your adventure.</span></div>`}
+function summaryHTML(){
+  const d=U.d,e=X(d.expId),t=tuksFor(dGuests(d));const o=optOf(e,d.opt);
+  return `${photo(e)}<div class="summary-in"><span class="tag ${e.collection}">${esc(COLL[e.collection].name.replace('Hakuna ',''))}</span><h3 style="margin-top:8px">${esc(e.name)}</h3>
+  <dl class="kv"><dt>Date</dt><dd>${d.date?fmtShort(d.date):'—'}</dd><dt>Time</dt><dd>${d.time&&(d.step>=1||e.flexible)&&d.date?esc(d.time):'—'}</dd><dt>Guests</dt><dd>${dGuests(d)}</dd><dt>Pickup</dt><dd>${esc(d.pickup)||'—'}</dd><dt>Duration</dt><dd>${esc(o?o.label:e.durationLabel)}</dd><dt>Vehicles</dt><dd>${t} × Private Tuk Tuk</dd></dl>
+  <div class="total"><span>Total</span><b>${money(unitPrice(e,d.opt)*t)}</b></div></div>`;
+}
+
+/* ---------- payment ---------- */
+function vPay(){
+  const p=U.pay;
+  return `<div class="wrap"><div class="pay"><div class="pay-box">
+   <div class="pay-top"><div class="eyebrow" style="color:var(--saffron-soft)">Secure your adventure</div><div class="amt">${money(p.amount)}</div><div style="opacity:.85;margin-top:4px">${esc(p.title)} · ${fmtShort(p.date)} · ${esc(p.time)}</div></div>
+   <div class="pay-in">
+    ${p.state==='processing'?`<div style="display:flex;gap:14px;align-items:center;padding:20px 0"><div class="spinner"></div><b>Waiting for payment confirmation…</b></div>`:`
+    <p>In the live system, this button opens an <b>iKhokha PayLink</b> for ${money(p.amount)}. The guest pays by card, Instant EFT or Apple/Google Pay, and iKhokha notifies the platform that the booking is <b>PAID</b>. The booking is then created automatically.</p>
+    <div class="lock">${tukIcon(false,24)}<span>This demo simulates the payment. No card details are collected.</span></div>
+    ${p.state==='failed'?`<div class="zone out"><span class="dot"></span><span><b>Payment was not completed.</b> Nothing has been charged and the time slot is still held. Try again, or contact us on WhatsApp.</span></div>`:''}
+    <button class="btn btn-go" data-act="paid">Pay ${money(p.amount)} securely with iKhokha</button>
+    <button class="btn btn-line btn-sm" data-act="payfail">Simulate a failed payment</button>
+    <button class="back" data-act="paycancel" style="margin-top:0">← Back to booking</button>`}
+   </div></div></div></div>`;
+}
+function createBooking(src){
+  // src: {expId,opt,date,time,adults,children,pickup,first,last,email,phone,notes,amount,hours,title,source,enquiryId}
+  const e=X(src.expId);const t=tuksFor(src.adults+src.children);const h=src.hours||durOf(e,src.opt);
+  const free=freeVehicles(src.date,src.time,h);
+  if(free.length<t)return {error:`Sorry, those Tuk Tuks were just booked by someone else. Choose another time.`};
+  const ref='HM-'+(S.seq++);
+  const b={ref,expId:src.expId,opt:src.opt||null,date:src.date,time:src.time,adults:src.adults,children:src.children,tuks:t,vehicles:free.slice(0,t),pickup:src.pickup,zone:pickupCheck(e,src.pickup)||'in',first:src.first,last:src.last,email:src.email,phone:src.phone,notes:src.notes||'',amount:src.amount,payment:'PAID',status:'Confirmed',source:src.source||'Website',host:S.hosts[0],created:TODAY,title:src.title||null,hours:src.hours||null};
+  S.bookings.push(b);save();return {booking:b};
+}
+
+/* ---------- messages ---------- */
+function msgPlan(b){
+  const e=X(b.expId);const title=b.title||e.name;const end=fromMin(toMin(b.time)+hoursOf(b)*60+60);
+  const host=b.host||'your host';
+  const list=[
+    {k:'confirm',name:'Booking confirmation',when:b.created+' 00:00',whenLabel:'Immediately after payment',ch:'Email + WhatsApp',
+     text:`You’re booked! 🎉\n${title}\n${fmtDate(b.date)} at ${b.time}\n${b.adults+b.children} guests · pickup: ${b.pickup}\nRef ${b.ref}\nGetting there should be part of the adventure!`},
+    {k:'48h',name:'Your adventure is coming up',when:addDays(b.date,-2)+' '+b.time,whenLabel:fmtShort(addDays(b.date,-2))+' · '+b.time,ch:'Email + WhatsApp',
+     text:`Your Hakuna adventure is coming up!\n${title} · ${fmtDate(b.date)} at ${b.time}\nPickup: ${b.pickup}\nWhat to bring: ${(e.bring||DEFAULT_BRING).slice(0,4).join(', ')}\nQuestions? WhatsApp ${WA}`},
+    {k:'morning',name:'Today is adventure day',when:b.date+' 07:00',whenLabel:fmtShort(b.date)+' · 07:00',ch:'WhatsApp',
+     text:`Today is adventure day! ☀️\n${host} will collect you at ${b.time} from ${b.pickup}.\nYour Tuk Tuk: ${(b.vehicles||[]).map(vname).join(' & ')||'to be assigned'}\nHost contact: ${WA}`},
+    {k:'after',name:'Review request',when:b.date+' '+end,whenLabel:fmtShort(b.date)+' · '+end,ch:'Email + WhatsApp',
+     text:`We hope you loved your Hakuna adventure!\nWould you share a few words? It helps a small, female-owned business more than you know.\n⭐ Review on Google · Review on TripAdvisor`}];
+  const nowStr=TODAY+' '+pad(new Date().getHours())+':'+pad(new Date().getMinutes());
+  list.forEach(m=>{m.state=b.status==='Cancelled'?'Stopped':(m.when<=nowStr?'Sent':'Scheduled');if(m.k==='confirm'&&b.payment!=='PAID'&&b.payment!=='REFUNDED')m.state='Waiting for payment'});
+  return list;
+}
+
+/* ---------- confirmation ---------- */
+function vDone(){
+  const b=S.bookings.find(x=>x.ref===U.lastRef);if(!b)return vHome();const e=X(b.expId);const plan=msgPlan(b);
+  return `<div class="wrap"><div class="done-page">
+   <div class="done-hero"><div class="eyebrow" style="color:var(--saffron-ink)">Payment received</div><h1>You’re booked!</h1><p style="font-size:18px;margin-top:8px">Your Hakuna adventure is confirmed.</p><div class="ref">Booking ${b.ref}</div></div>
+   <div class="two">
+    <div class="side-card"><h4>Your adventure</h4><h3 style="font-size:24px">${esc(b.title||e.name)}</h3><dl class="kv"><dt>Date</dt><dd>${fmtDate(b.date)}</dd><dt>Time</dt><dd>${b.time}</dd><dt>Guests</dt><dd>${b.adults+b.children}</dd><dt>Pickup</dt><dd>${esc(b.pickup)}</dd><dt>Tuk Tuks</dt><dd>${b.tuks}</dd><dt>Paid</dt><dd>${money(b.amount)}</dd></dl>
+     <p class="muted" style="font-size:14px">You’ll receive your confirmation by email and WhatsApp.</p></div>
+    <div class="side-card"><h4>What to bring</h4><ul class="ticks b">${(e.bring||DEFAULT_BRING).map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="headline" style="margin-top:4px;font-size:19px">Getting there should be part of the adventure.</p></div>
+   </div>
+   <div class="side-card"><h4>Automated messages for this booking</h4><p class="muted" style="font-size:14px;margin-top:-8px">In the live system these go out automatically by email (Resend) and WhatsApp. Nothing is sent in this demo.</p>
+    <div class="two">
+     <div class="msg"><span class="ch">WhatsApp · sent now</span><div class="bubble">${esc(plan[0].text)}</div></div>
+     <div><ul class="timeline">${plan.map(m=>`<li class="${m.state==='Sent'?'':'sch'}"><div><b>${esc(m.name)}</b><div class="muted" style="font-size:14px">${m.k==='confirm'?'Now':esc(m.whenLabel)} · ${esc(m.ch)}</div></div></li>`).join('')}</ul></div>
+    </div></div>
+   <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-sea" data-act="go" data-v="home">Back to Hakuna Matuktuk</button><button class="btn btn-line" data-act="adminbooking" data-ref="${b.ref}">See this booking in the admin dashboard</button></div>
+  </div></div>`;
+}
+
+/* ---------- enquiry products ---------- */
+function vCustom(){
+  if(U.enqDone)return enqThanks();
+  const kind=U.customKind||'tailor-made';
+  return `<div class="wrap"><div class="book-grid"><div class="panel">
+   <div class="eyebrow">Create your own adventure</div><h1 class="q" style="font-size:34px;margin-top:8px">Request your adventure</h1><p class="q-sub">Tell us what you’d love to do. We’ll send you a personal proposal; accept it, pay, and you’re booked.</p>
+   <form id="enqform" novalidate>
+    <div class="opts" style="grid-template-columns:1fr 1fr">${['tailor-made','celebration'].map(k=>`<button type="button" class="opt ${kind===k?'sel':''}" data-act="ckind" data-k="${k}"><span><b>${esc(X(k).name)}</b><br><span class="muted" style="font-size:13px">${esc(X(k).short)}</span></span></button>`).join('')}</div>
+    <div class="row2"><div class="field"><label for="e-date">Preferred date</label><input class="inp" type="date" id="e-date" name="date" min="${minDate()}" required></div><div class="field"><label for="e-guests">Number of guests</label><input class="inp" type="number" id="e-guests" name="guests" min="1" max="12" value="2" required></div></div>
+    <div class="field"><label for="e-pickup">Pickup location</label><input class="inp" id="e-pickup" name="pickup" placeholder="Hotel, accommodation or address" required></div>
+    <div class="field"><label for="e-wish">What would you like to do?</label><textarea class="inp" id="e-wish" name="wish" placeholder="e.g. A sunset picnic on Chapman’s Peak, then dinner in Kalk Bay" required></textarea></div>
+    <div class="row2"><div class="field"><label for="e-occ">Occasion</label><select class="inp" id="e-occ" name="occasion"><option>Just because</option><option>Birthday</option><option>Anniversary</option><option>Proposal</option><option>Honeymoon</option><option>Team or group outing</option></select></div>
+    <div class="field"><label for="e-dur">Preferred duration</label><select class="inp" id="e-dur" name="duration"><option>2 hours</option><option selected>Half day (3–4 hours)</option><option>Most of the day (5–6 hours)</option><option>Full day (8 hours)</option></select></div></div>
+    <div class="field"><label for="e-budget">Budget <span class="muted" style="font-weight:500">(optional)</span></label><input class="inp" id="e-budget" name="budget" placeholder="e.g. R5,000"></div>
+    ${contactFields()}
+    <div class="err" id="enqerr" role="alert"></div>
+    <div class="foot"><span class="muted" style="font-size:14px">We usually reply within one working day.</span><button class="btn btn-go" type="submit">Request your adventure</button></div>
+   </form></div>
+   <aside class="summary">${photo(X(kind))}<div class="summary-in"><h3>How it works</h3><ul class="timeline" style="margin-top:14px"><li><div><b>You send your idea</b></div></li><li class="sch"><div><b>We create your proposal</b><div class="muted" style="font-size:14px">Itinerary, Tuk Tuks and price</div></div></li><li class="sch"><div><b>Accept and pay</b><div class="muted" style="font-size:14px">Secure iKhokha payment</div></div></li><li class="sch"><div><b>Adventure confirmed</b></div></li></ul></div></aside>
+  </div></div>`;
+}
+function contactFields(){return `<div class="row2"><div class="field"><label for="e-first">First name</label><input class="inp" id="e-first" name="first" required autocomplete="given-name"></div><div class="field"><label for="e-last">Surname</label><input class="inp" id="e-last" name="last" required autocomplete="family-name"></div></div>
+ <div class="row2"><div class="field"><label for="e-email">Email</label><input class="inp" type="email" id="e-email" name="email" required autocomplete="email"></div><div class="field"><label for="e-phone">Mobile / WhatsApp</label><input class="inp" type="tel" id="e-phone" name="phone" required autocomplete="tel"></div></div>`}
+function vTrip(){
+  if(U.enqDone)return enqThanks();
+  return `<div class="wrap"><div class="book-grid"><div class="panel">
+   <div class="eyebrow">Book a trip</div><h1 class="q" style="font-size:34px;margin-top:8px">A Tuk Tuk, just for the journey</h1><p class="q-sub">Pre-booked charter trips within Hakuna’s operating areas in the Deep South Peninsula. Tell us where and when; we’ll confirm availability and send your quote.</p>
+   <form id="tripform" novalidate>
+    <div class="row2"><div class="field"><label for="t-from">Collect me from</label><input class="inp" id="t-from" name="pickup" placeholder="e.g. Fish Hoek" required></div><div class="field"><label for="t-to">Take me to</label><input class="inp" id="t-to" name="dropoff" placeholder="e.g. Kalk Bay harbour" required></div></div>
+    <div class="row2"><div class="field"><label for="t-date">Date</label><input class="inp" type="date" id="t-date" name="date" min="${minDate()}" required></div><div class="field"><label for="t-time">Pickup time</label><input class="inp" type="time" id="t-time" name="time" value="18:00" required></div></div>
+    <div class="row2"><div class="field"><label for="t-guests">Guests</label><input class="inp" type="number" id="t-guests" name="guests" min="1" max="6" value="2"></div><div class="field"><label for="t-ret">Return trip?</label><select class="inp" id="t-ret" name="ret"><option>One way</option><option selected>Return, same day</option></select></div></div>
+    <div class="field"><label for="t-notes">Anything else? <span class="muted" style="font-weight:500">(optional)</span></label><textarea class="inp" id="t-notes" name="wish"></textarea></div>
+    ${contactFields()}
+    <div class="err" id="enqerr" role="alert"></div>
+    <div class="foot"><span class="muted" style="font-size:14px">Operating area: Simon’s Town to Muizenberg, Noordhoek and Kommetjie.</span><button class="btn btn-go" type="submit">Request my trip</button></div>
+   </form></div>
+   <aside class="summary"><div class="summary-in"><h3>Good to know</h3><ul class="ticks" style="margin-top:12px"><li>Private for up to 2 guests per Tuk Tuk</li><li>Ideal for dinners in Kalk Bay, beach days and harbour visits</li><li>Quoted per trip, paid securely online once you accept</li></ul><p class="muted" style="font-size:14px;margin-top:14px">Prefer to chat? WhatsApp <b>${WA}</b></p></div></aside>
+  </div></div>`;
+}
+function enqThanks(){const q=S.enquiries.find(x=>x.id===U.enqDone);
+  return `<div class="wrap"><div class="done-page"><div class="done-hero" style="background:var(--sea-soft);color:var(--ink)"><div class="eyebrow">Request received · ${esc(q.id)}</div><h1>Thank you, ${esc(q.first)}.</h1><p style="font-size:18px;margin-top:8px">We’ll send your Hakuna adventure proposal to ${esc(q.email)} and WhatsApp ${esc(q.phone)}.</p></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-sea" data-act="go" data-v="home">Back to Hakuna Matuktuk</button><button class="btn btn-line" data-act="adminenq">Answer it in the admin dashboard</button></div></div></div>`}
+function vProposal(){
+  const q=S.enquiries.find(x=>x.id===U.proposal);if(!q||!q.quote)return vHome();const e=X(q.kind==='trip'?'charter':q.kind);
+  const tuks=tuksFor(+q.guests);
+  return `<div class="wrap"><div class="done-page">
+   <div class="done-hero" style="background:linear-gradient(135deg,var(--sea) 0%,var(--water) 100%);color:#fff"><div class="eyebrow" style="color:var(--saffron-soft)">Your Hakuna adventure proposal · ${esc(q.id)}</div><h1>${esc(q.kind==='trip'?'Your private Tuk Tuk trip':e.name)}</h1><p style="font-size:18px;margin-top:8px;opacity:.9">Prepared for ${esc(q.first+' '+q.last)}</p></div>
+   <div class="two"><div class="side-card"><h4>The plan</h4><p>${esc(q.quote.note)}</p><dl class="kv"><dt>Date</dt><dd>${fmtDate(q.date)}</dd><dt>Start</dt><dd>${esc(q.time||'10:00')}</dd><dt>Guests</dt><dd>${q.guests}</dd><dt>Pickup</dt><dd>${esc(q.pickup)}</dd>${q.dropoff?`<dt>Destination</dt><dd>${esc(q.dropoff)}</dd>`:''}<dt>Duration</dt><dd>${q.quote.hours} hours</dd><dt>Tuk Tuks</dt><dd>${tuks}</dd></dl>
+    <div class="total"><span>Total</span><b>${money(q.quote.amount)}</b></div></div>
+   <div class="side-card"><h4>Your request</h4><p>${esc(q.wish)}</p>${q.occasion?`<p class="muted">Occasion: ${esc(q.occasion)}</p>`:''}
+    ${q.status==='Booked'?`<div class="zone in"><span class="dot"></span><span>Accepted and paid. Booking ${esc(q.bookingRef)}.</span></div>`:`<label class="check"><input type="checkbox" id="pagree"><span>I accept this proposal and the booking terms.</span></label><div class="err" id="perr" role="alert"></div><button class="btn btn-go" data-act="acceptprop">Accept & pay ${money(q.quote.amount)}</button>`}</div></div>
+   <button class="back" data-act="go" data-v="admin">← Back to admin (demo)</button></div></div>`;
+}
+
+/* ---------- ADMIN ---------- */
+const STATUS_PILL={Confirmed:'ok',Completed:'mute',Cancelled:'bad','Pending payment':'warn'};
+const PAY_PILL={PAID:'ok',PENDING:'warn',REFUNDED:'bad'};
+function bookingsIn(from,to){return S.bookings.filter(b=>b.date>=from&&b.date<=to).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))}
+function vAdmin(){
+  const A=U.admin;const newEnq=S.enquiries.filter(q=>q.status==='New').length;
+  const tabs=[['today','Today'],['bookings','Bookings'],['calendar','Calendar'],['fleet','Fleet'],['experiences','Experiences'],['enquiries','Enquiries',newEnq],['messages','Messages'],['insights','Insights']];
+  const body={today:aToday,bookings:aBookings,calendar:aCalendar,fleet:aFleet,experiences:aExperiences,enquiries:aEnquiries,messages:aMessages,insights:aInsights}[A.tab]();
+  return `<div class="admin"><nav class="side"><div class="who"><b>Hakuna Matuktuk</b>Signed in as owner (demo)</div>${tabs.map(([k,l,c])=>`<button class="${A.tab===k?'on':''}" data-act="atab" data-t="${k}"><span>${l}</span>${c?`<span class="count">${c}</span>`:''}</button>`).join('')}<div class="spacer"></div><button data-act="reset" class="muted" style="font-size:13px">Reset demo data</button></nav><div class="main">${body}</div></div>`;
+}
+function kpis(){
+  const today=S.bookings.filter(b=>b.date===TODAY&&b.status!=='Cancelled');
+  const tuksOut=new Set();today.forEach(b=>b.vehicles.forEach(v=>tuksOut.add(v)));
+  const wk=bookingsIn(TODAY,addDays(TODAY,6)).filter(b=>b.status!=='Cancelled');
+  const rev=wk.filter(b=>b.payment==='PAID').reduce((s,b)=>s+b.amount,0);
+  const open=S.enquiries.filter(q=>q.status!=='Booked').length;
+  return `<div class="kpis"><div class="kpi"><div class="l">Adventures today</div><div class="v">${today.length}</div><div class="s">${today.reduce((s,b)=>s+b.adults+b.children,0)} guests</div></div>
+  <div class="kpi"><div class="l">Tuk Tuks out today</div><div class="v">${tuksOut.size}<span class="muted" style="font-size:18px"> / ${activeFleet().length}</span></div><div class="s">${activeFleet().length} available in fleet</div></div>
+  <div class="kpi"><div class="l">Paid, next 7 days</div><div class="v">${money(rev)}</div><div class="s">${wk.length} bookings</div></div>
+  <div class="kpi"><div class="l">Open enquiries</div><div class="v">${open}</div><div class="s">${S.enquiries.filter(q=>q.status==='New').length} need a quote</div></div></div>`;
+}
+function bookingTable(list,{grouped=false,showDate=false}={}){
+  if(!list.length)return `<div class="tbl-wrap"><div class="empty">No bookings in this period.</div></div>`;
+  let last='',rows='';
+  list.forEach(b=>{const e=X(b.expId);
+    if(grouped&&b.date!==last){rows+=`<tr class="day-row"><td colspan="7">${b.date===TODAY?'Today, ':b.date===addDays(TODAY,1)?'Tomorrow, ':''}${fmtDate(b.date)}</td></tr>`;last=b.date}
+    rows+=`<tr class="click" data-act="open" data-ref="${b.ref}"><td class="time">${showDate?`<span class="muted" style="font-size:12px;font-family:var(--f-body);font-weight:600;display:block">${fmtShort(b.date)}</span>`:''}${b.time}</td><td><b>${esc(b.last)}</b><div class="muted mono">${b.ref}</div></td><td class="num">${b.adults+b.children}</td><td>${esc(b.pickup)}${b.zone==='out'?' <span class="pill warn">Outside area</span>':''}</td><td>${esc(b.title||e.name)}</td><td>${(b.vehicles||[]).map(v=>`<span class="vchip">${esc(vname(v))}</span>`).join('')||'<span class="pill warn">Unassigned</span>'}</td><td><span class="pill ${STATUS_PILL[b.status]||'info'}">${esc(b.status)}</span></td></tr>`});
+  return `<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Booking</th><th>Guests</th><th>Pickup</th><th>Experience</th><th>Tuk Tuk</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function aToday(){
+  const A=U.admin;const f=A.filter;
+  const range={today:[TODAY,TODAY],tomorrow:[addDays(TODAY,1),addDays(TODAY,1)],week:[TODAY,addDays(TODAY,6)]}[f];
+  const list=bookingsIn(range[0],range[1]);
+  return `<div class="main-head"><div><div class="eyebrow">${fmtDate(TODAY)}</div><h1>Good morning, Hakuna</h1></div><div class="filters">${[['today','Today'],['tomorrow','Tomorrow'],['week','This week']].map(([k,l])=>`<button class="${f===k?'on':''}" data-act="afilter" data-f="${k}">${l}</button>`).join('')}<button data-act="atab" data-t="calendar">Calendar</button></div></div>
+  ${kpis()}${bookingTable(list,{grouped:f==='week'})}
+  <p class="muted" style="font-size:14px;margin-top:12px">Click a booking to assign a Tuk Tuk or host, reschedule, cancel, refund or contact the guest.</p>`;
+}
+function aBookings(){
+  const A=U.admin;const q=A.q.toLowerCase();
+  let list=S.bookings.slice();
+  if(A.status==='upcoming')list=list.filter(b=>b.date>=TODAY&&b.status!=='Cancelled');
+  else if(A.status!=='all')list=list.filter(b=>b.status===A.status);
+  if(q)list=list.filter(b=>(b.ref+' '+b.first+' '+b.last+' '+b.pickup+' '+X(b.expId).name+' '+b.source).toLowerCase().includes(q));
+  list.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  return `<div class="main-head"><div><h1>Bookings</h1><p class="muted">${S.bookings.length} bookings across all channels</p></div><button class="btn btn-go btn-sm" data-act="addbooking">Add a booking</button></div>
+  ${A.adding?addBookingForm():''}
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center"><input class="inp" id="bq" data-abind="q" placeholder="Search name, ref, pickup, source" value="${esc(A.q)}" style="max-width:320px"><div class="filters">${[['all','All'],['upcoming','Upcoming'],['Pending payment','Pending payment'],['Completed','Completed'],['Cancelled','Cancelled']].map(([k,l])=>`<button class="${A.status===k?'on':''}" data-act="astatus" data-s="${k}">${l}</button>`).join('')}</div></div>
+  <div id="btable">${bookingTable(list,{showDate:true})}</div>`;
+}
+function addBookingForm(){
+  const exps=S.exps.filter(e=>!e.poa&&e.active);
+  return `<form id="addform" class="inline-box" style="margin-bottom:18px" novalidate><b>Add a booking taken by WhatsApp, a hotel, DMC or online travel agent</b>
+   <div class="row2"><div class="field"><label for="ab-exp">Experience</label><select class="inp" id="ab-exp" name="exp">${exps.map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('')}</select></div><div class="field"><label for="ab-src">Booking source</label><select class="inp" id="ab-src" name="source">${['WhatsApp','Hotels','DMC','Viator','Airbnb','Website','Walk-in'].map(s=>`<option>${s}</option>`).join('')}</select></div></div>
+   <div class="row2"><div class="field"><label for="ab-date">Date</label><input class="inp" type="date" id="ab-date" name="date" min="${TODAY}" value="${addDays(TODAY,2)}"></div><div class="field"><label for="ab-time">Start time</label><input class="inp" type="time" id="ab-time" name="time" value="10:00"></div></div>
+   <div class="row2"><div class="field"><label for="ab-g">Guests</label><input class="inp" type="number" id="ab-g" name="guests" min="1" max="6" value="2"></div><div class="field"><label for="ab-p">Pickup</label><input class="inp" id="ab-p" name="pickup" value="Fish Hoek"></div></div>
+   <div class="row2"><div class="field"><label for="ab-n">Guest name</label><input class="inp" id="ab-n" name="name" value="" placeholder="First and last name"></div><div class="field"><label for="ab-ph">Mobile / WhatsApp</label><input class="inp" id="ab-ph" name="phone" placeholder="+27 ..."></div></div>
+   <div class="row2"><div class="field"><label for="ab-pay">Payment</label><select class="inp" id="ab-pay" name="pay"><option value="PENDING">Send iKhokha PayLink (pending)</option><option value="PAID">Already paid (e.g. agent invoice)</option></select></div><div></div></div>
+   <div class="err" id="aberr" role="alert"></div>
+   <div class="actions"><button class="btn btn-sea btn-sm" type="submit">Check availability & add</button><button class="btn btn-line btn-sm" type="button" data-act="addbooking">Close</button></div></form>`;
+}
+function aCalendar(){
+  const A=U.admin;const [y,m]=A.month.split('-').map(Number);const first=new Date(y,m-1,1);const off=(first.getDay()+6)%7;const n=new Date(y,m,0).getDate();
+  let cells='';for(let i=0;i<off;i++)cells+='<span></span>';
+  for(let d=1;d<=n;d++){const s=y+'-'+pad(m)+'-'+pad(d);const list=S.bookings.filter(b=>b.date===s&&b.status!=='Cancelled').sort((a,b)=>a.time.localeCompare(b.time));
+    cells+=`<button class="c ${s===TODAY?'today':''} ${A.calDay===s?'sel':''} ${s<TODAY?'off':''}" data-act="calday" data-d="${s}"><span class="n">${d}</span>${list.slice(0,3).map(b=>`<span class="b">${b.time} ${esc(b.last)}</span>`).join('')}${list.length>3?`<span class="muted">+${list.length-3} more</span>`:''}${list.length&&!list.slice(0,1).length?'':''}</button>`}
+  const dayList=bookingsIn(A.calDay,A.calDay);
+  return `<div class="main-head"><div><h1>Calendar</h1></div><div class="cal-head" style="gap:12px;margin:0"><button class="icon-btn" data-act="amonth" data-dir="-1" aria-label="Previous month">‹</button><b>${MONTHS[m-1]} ${y}</b><button class="icon-btn" data-act="amonth" data-dir="1" aria-label="Next month">›</button></div></div>
+  <div class="mcal">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<span class="muted" style="font-size:12px;font-weight:700;text-align:center">${x}</span>`).join('')}${cells}</div>
+  <h3 style="font-size:20px;margin:24px 0 12px">${fmtDate(A.calDay)}</h3>${bookingTable(dayList)}`;
+}
+function aFleet(){
+  const av=activeFleet();
+  const todayB=S.bookings.filter(b=>b.date===TODAY&&b.status!=='Cancelled');
+  return `<div class="main-head"><div><h1>Fleet</h1><p class="muted">Change a Tuk Tuk’s status and the booking calendar updates instantly. No rebuild needed.</p></div></div>
+  <div class="engine"><div class="tuk-row">${S.fleet.map(v=>tukIcon(v.status==='available',36)).join('')}</div><div><b>${av.length} Tuk Tuk${av.length===1?'':'s'} available for booking</b><div style="font-size:14px">${av.map(vname).join(' + ')||'None'}. The availability engine allocates these automatically, so the same Tuk Tuk is never sold twice for overlapping times (${BUFFER}-minute turnaround buffer).</div></div></div>
+  <div class="fleet">${S.fleet.map(v=>{const mine=todayB.filter(b=>b.vehicles.includes(v.id)).sort((a,b)=>a.time.localeCompare(b.time));
+    return `<div class="veh"><h3><span class="light ${v.status}"></span>${esc(v.name)}</h3>
+    <div class="field" style="margin:0"><label for="fs-${v.id}">Status</label><select class="inp" id="fs-${v.id}" data-act-change="fleetstatus" data-id="${v.id}">${['available','unavailable','maintenance'].map(s=>`<option value="${s}" ${v.status===s?'selected':''}>${s[0].toUpperCase()+s.slice(1)}</option>`).join('')}</select></div>
+    <div class="field" style="margin:0"><label for="fn-${v.id}">Note</label><input class="inp" id="fn-${v.id}" data-act-change="fleetnote" data-id="${v.id}" value="${esc(v.note)}"></div>
+    <div><div class="muted" style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Today</div>${mine.length?mine.map(b=>`<div style="display:flex;justify-content:space-between;gap:8px;font-size:14px;padding:4px 0"><span><b class="num">${b.time}–${fromMin(toMin(b.time)+hoursOf(b)*60)}</b> ${esc(b.last)}</span><span class="pill info">Booked</span></div>`).join(''):'<span class="muted" style="font-size:14px">Free all day</span>'}</div></div>`}).join('')}</div>`;
+}
+function aExperiences(){
+  const A=U.admin;
+  if(A.editExp)return expEditor(X(A.editExp));
+  const list=S.exps.filter(e=>!e.hidden);
+  return `<div class="main-head"><div><h1>Experiences</h1><p class="muted">Change a price, time or description here and the public site updates straight away.</p></div></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Experience</th><th>Collection</th><th>Price (R)</th><th>Duration</th><th>Start times</th><th>Instant booking</th><th>Live</th><th></th></tr></thead><tbody>
+  ${list.map(e=>`<tr><td><b>${esc(e.name)}</b><div class="muted" style="font-size:12px">${e.entryIncluded?'Entry fees incl. · ':''}${e.transferIncluded?'CT transfer incl.':''}</div></td><td><span class="tag ${e.collection}">${esc(e.collection)}</span></td>
+  <td>${e.poa?'<span class="muted">POA</span>':e.options?`<span class="muted">${e.options.length} options</span>`:`<input class="inp price-inp num" type="number" id="pr-${e.id}" data-act-change="price" data-id="${e.id}" value="${e.price}" step="50" min="0" aria-label="Price for ${esc(e.name)}">`}</td>
+  <td style="white-space:nowrap">${esc(e.durationLabel)}</td><td class="num" style="font-size:13px">${e.flexible?'Flexible':e.times.join(', ')||'—'}</td>
+  <td><button class="toggle ${e.instant?'on':''}" data-act="tinstant" data-id="${e.id}" aria-label="Instant booking" ${e.poa?'disabled':''}></button></td>
+  <td><button class="toggle ${e.active?'on':''}" data-act="tactive" data-id="${e.id}" aria-label="Show on website"></button></td>
+  <td><button class="btn btn-line btn-sm" data-act="editexp" data-id="${e.id}">Edit</button></td></tr>`).join('')}</tbody></table></div>
+  <p class="muted" style="font-size:14px;margin-top:12px">Turning off instant booking switches the button on the website to “Request your adventure”.</p>`;
+}
+function expEditor(e){
+  return `<button class="back" data-act="editexp" data-id="" style="margin:0 0 12px">← All experiences</button>
+  <form id="expform" class="box" data-id="${e.id}" novalidate><h3>${esc(e.name)}</h3>
+   <div class="row2"><div class="field"><label for="x-name">Name</label><input class="inp" id="x-name" name="name" value="${esc(e.name)}"></div><div class="field"><label for="x-col">Collection</label><select class="inp" id="x-col" name="collection">${COLLECTIONS.map(c=>`<option value="${c.id}" ${c.id===e.collection?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div></div>
+   <div class="row2"><div class="field"><label for="x-price">Price per Tuk Tuk (R)</label><input class="inp" type="number" id="x-price" name="price" value="${e.price}" ${e.options||e.poa?'disabled':''}></div><div class="field"><label for="x-dur">Duration label</label><input class="inp" id="x-dur" name="durationLabel" value="${esc(e.durationLabel)}"></div></div>
+   <div class="row2"><div class="field"><label for="x-hours">Hours blocked per booking</label><input class="inp" type="number" id="x-hours" name="hours" value="${e.hours}" min="1" max="10" step="0.5"></div><div class="field"><label for="x-times">Start times</label><input class="inp" id="x-times" name="times" value="${esc(e.times.join(', '))}"><span class="hint">Comma separated, 24-hour time</span></div></div>
+   <div class="field"><label for="x-pick">Pickup area</label><select class="inp" id="x-pick" name="rule">${Object.entries(RULES).map(([k,r])=>`<option value="${k}" ${k===e.rule?'selected':''}>${esc(r.label)}</option>`).join('')}</select></div>
+   <div class="field"><label for="x-head">Headline</label><input class="inp" id="x-head" name="headline" value="${esc(e.headline)}"></div>
+   <div class="field"><label for="x-desc">Description</label><textarea class="inp" id="x-desc" name="desc" style="min-height:150px">${esc(e.desc.join('\n\n'))}</textarea><span class="hint">Blank line between paragraphs</span></div>
+   <div class="row2"><div class="field"><label for="x-inc">What’s included</label><textarea class="inp" id="x-inc" name="includes" style="min-height:150px">${esc(e.includes.join('\n'))}</textarea><span class="hint">One per line</span></div><div class="field"><label for="x-exc">What’s excluded</label><textarea class="inp" id="x-exc" name="excludes" style="min-height:150px">${esc(e.excludes.join('\n'))}</textarea></div></div>
+   <div style="display:flex;gap:22px;flex-wrap:wrap;margin-bottom:16px">${[['entryIncluded','Entry fees included'],['transferIncluded','Cape Town transfer included'],['instant','Instant booking'],['active','Show on website']].map(([k,l])=>`<label class="check" style="margin:0"><input type="checkbox" name="${k}" ${e[k]?'checked':''}><span>${l}</span></label>`).join('')}</div>
+   <div class="actions"><button class="btn btn-sea btn-sm" type="submit">Save changes</button><button class="btn btn-line btn-sm" type="button" data-act="exp" data-id="${e.id}">Preview on website</button></div></form>`;
+}
+function aEnquiries(){
+  const list=S.enquiries.slice().sort((a,b)=>b.created.localeCompare(a.created));
+  return `<div class="main-head"><div><h1>Enquiries</h1><p class="muted">Tailor-made adventures, celebrations and trips. Send a proposal; the guest accepts and pays online.</p></div></div>
+  ${list.length?list.map(q=>{const pill=q.status==='New'?'warn':q.status==='Booked'?'ok':'info';const qf=U.admin.quoteFor===q.id;
+   return `<div class="enq"><div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="mono muted">${q.id}</span><span class="pill ${pill}">${esc(q.status)}</span><span class="tag custom">${q.kind==='trip'?'Trip':esc(X(q.kind).name)}</span></div>
+    <h3 style="margin-top:8px">${esc(q.first+' '+q.last)}${q.occasion&&q.occasion!=='Just because'?` · ${esc(q.occasion)}`:''}</h3>
+    <p style="margin-top:6px">${esc(q.wish)}</p>
+    <dl class="kv" style="max-width:460px"><dt>Date</dt><dd>${fmtDate(q.date)}${q.time?' · '+esc(q.time):''}</dd><dt>Guests</dt><dd>${q.guests} (${tuksFor(+q.guests)} Tuk Tuk${tuksFor(+q.guests)>1?'s':''})</dd><dt>Pickup</dt><dd>${esc(q.pickup)}</dd>${q.dropoff?`<dt>To</dt><dd>${esc(q.dropoff)}</dd>`:''}${q.duration?`<dt>Duration</dt><dd>${esc(q.duration)}</dd>`:''}${q.budget?`<dt>Budget</dt><dd>${esc(q.budget)}</dd>`:''}<dt>Contact</dt><dd>${esc(q.email)}<br>${esc(q.phone)}</dd></dl></div>
+    <div>${q.quote&&!qf?`<div class="box" style="background:var(--surface-2);border:0"><div class="muted" style="font-size:13px;font-weight:700">PROPOSAL</div><div style="font-family:var(--f-display);font-weight:700;font-size:28px">${money(q.quote.amount)}</div><p style="font-size:14px">${esc(q.quote.note)}</p><p class="muted" style="font-size:13px">${q.quote.hours} hours · ${tuksFor(+q.guests)} Tuk Tuk(s)</p></div>
+      <div class="actions" style="margin-top:10px"><button class="btn btn-sea btn-sm" data-act="viewprop" data-id="${q.id}">View as guest</button>${q.status!=='Booked'?`<button class="btn btn-line btn-sm" data-act="quote" data-id="${q.id}">Edit proposal</button>`:`<button class="btn btn-line btn-sm" data-act="adminbooking" data-ref="${q.bookingRef}">Open ${q.bookingRef}</button>`}</div>`
+     :qf?`<form class="inline-box" id="quoteform" data-id="${q.id}" novalidate><b>Create proposal</b><div class="row2"><div class="field" style="margin:0"><label for="qa">Total (R)</label><input class="inp" type="number" id="qa" name="amount" value="${q.quote?q.quote.amount:''}" min="0" step="50"></div><div class="field" style="margin:0"><label for="qh">Hours</label><input class="inp" type="number" id="qh" name="hours" value="${q.quote?q.quote.hours:4}" min="1" max="10" step="0.5"></div></div><div class="field" style="margin:0"><label for="qt">Start time</label><input class="inp" type="time" id="qt" name="time" value="${esc(q.time||'10:00')}"></div><div class="field" style="margin:0"><label for="qn">What’s included</label><textarea class="inp" id="qn" name="note">${esc(q.quote?q.quote.note:'')}</textarea></div><div class="err" id="qerr" role="alert"></div><div class="actions"><button class="btn btn-go btn-sm" type="submit">Send proposal</button><button class="btn btn-line btn-sm" type="button" data-act="quote" data-id="">Cancel</button></div></form>`
+     :`<button class="btn btn-go btn-sm" data-act="quote" data-id="${q.id}">Create proposal</button><p class="muted" style="font-size:14px;margin-top:10px">Free Tuk Tuks on ${fmtShort(q.date)} at ${esc(q.time||'10:00')}: <b>${freeVehicles(q.date,q.time||'10:00',4).map(vname).join(', ')||'none'}</b></p>`}</div></div>`}).join(''):'<div class="box empty">No enquiries yet.</div>'}`;
+}
+function aMessages(){
+  const up=S.bookings.filter(b=>b.date>=TODAY&&b.status!=='Cancelled').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const rows=[];up.forEach(b=>msgPlan(b).forEach(m=>{if(m.k!=='confirm')rows.push({b,m})}));
+  rows.sort((x,y)=>x.m.when.localeCompare(y.m.when));
+  const sel=U.admin.msgSel||(rows[0]?rows[0].b.ref+'|'+rows[0].m.k:null);
+  const cur=rows.find(r=>r.b.ref+'|'+r.m.k===sel)||rows[0];
+  return `<div class="main-head"><div><h1>Automated messages</h1><p class="muted">Confirmation, 48-hour reminder, morning-of message and review request, sent by email (Resend) and WhatsApp.</p></div></div>
+  <div class="grid-2" style="grid-template-columns:1.4fr 1fr"><div class="tbl-wrap"><table><thead><tr><th>When</th><th>Message</th><th>Guest</th><th>Status</th></tr></thead><tbody>
+   ${rows.map(({b,m})=>`<tr class="click" data-act="msgsel" data-k="${b.ref}|${m.k}" style="${cur&&cur.b===b&&cur.m===m?'background:var(--sea-soft)':''}"><td class="num" style="white-space:nowrap">${esc(m.whenLabel)}</td><td>${esc(m.name)}<div class="muted" style="font-size:12px">${esc(m.ch)}</div></td><td>${esc(b.last)} <span class="mono muted">${b.ref}</span></td><td><span class="pill ${m.state==='Sent'?'ok':m.state==='Scheduled'?'info':'warn'}">${esc(m.state)}</span></td></tr>`).join('')}
+  </tbody></table></div>
+  <div>${cur?`<div class="msg" style="position:sticky;top:90px"><span class="ch">${esc(cur.m.ch)} · ${esc(cur.m.whenLabel)}</span><b>${esc(cur.m.name)}</b><div class="bubble">${esc(cur.m.text)}</div><span class="muted" style="font-size:13px">To ${esc(cur.b.first+' '+cur.b.last)} · ${esc(cur.b.phone)} · ${esc(cur.b.email)}</span></div>`:'<div class="box empty">No upcoming messages.</div>'}</div></div>`;
+}
+function aInsights(){
+  const valid=S.bookings.filter(b=>b.status!=='Cancelled');
+  const src={};valid.forEach(b=>src[b.source]=(src[b.source]||0)+1);
+  const srcRows=Object.entries(src).sort((a,b)=>b[1]-a[1]);const maxS=Math.max(...srcRows.map(r=>r[1]),1);
+  const exp={};valid.forEach(b=>{const n=b.title||X(b.expId).name;exp[n]=(exp[n]||0)+b.amount});
+  const expRows=Object.entries(exp).sort((a,b)=>b[1]-a[1]).slice(0,7);const maxE=Math.max(...expRows.map(r=>r[1]),1);
+  const total=valid.filter(b=>b.payment==='PAID').reduce((s,b)=>s+b.amount,0);
+  return `<div class="main-head"><div><h1>Insights</h1><p class="muted">Where your bookings come from. Useful when you approach hotels, DMCs and funders.</p></div></div>
+  <div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><div class="l">Bookings</div><div class="v">${valid.length}</div></div><div class="kpi"><div class="l">Revenue collected</div><div class="v">${money(total)}</div></div><div class="kpi"><div class="l">Average booking</div><div class="v">${money(total/Math.max(1,valid.filter(b=>b.payment==='PAID').length))}</div></div></div>
+  <div class="grid-2"><div class="box"><h3>Bookings by source</h3><div class="bars">${srcRows.map(([k,v])=>`<div class="bar"><span>${esc(k)}</span><span class="t"><i style="width:${(v/maxS*100).toFixed(1)}%"></i></span><span>${v}</span></div>`).join('')}</div></div>
+  <div class="box"><h3>Revenue by experience</h3><div class="bars">${expRows.map(([k,v])=>`<div class="bar" style="grid-template-columns:1fr 90px 76px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(k)}">${esc(k)}</span><span class="t"><i class="alt" style="width:${(v/maxE*100).toFixed(1)}%"></i></span><span>${money(v)}</span></div>`).join('')}</div></div></div>`;
+}
+
+/* ---------- booking drawer ---------- */
+function drawerHTML(){
+  const b=S.bookings.find(x=>x.ref===U.admin.sel);if(!b)return '';const e=X(b.expId);const mode=U.drawerMode;const o=optOf(e,b.opt);
+  const h=hoursOf(b);const others=new Set(usedVehicles(b.date,b.time,h,b.ref));
+  return `<div class="scrim" data-act="close"></div><aside class="drawer" role="dialog" aria-label="Booking ${b.ref}">
+   <div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><div class="mono muted">BOOKING #${b.ref}</div><h2>${esc(b.first+' '+b.last)}</h2></div><button class="icon-btn" data-act="close" aria-label="Close">×</button></div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill ${STATUS_PILL[b.status]||'info'}">${esc(b.status)}</span><span class="pill ${PAY_PILL[b.payment]}">${b.payment}</span><span class="pill mute">Source: ${esc(b.source)}</span></div>
+   <dl class="dgrid"><dt>Experience</dt><dd>${esc(b.title||e.name)}${o&&!b.title?` (${esc(o.label)})`:''}</dd><dt>Date</dt><dd>${fmtDate(b.date)}</dd><dt>Time</dt><dd>${b.time}–${fromMin(toMin(b.time)+h*60)}</dd><dt>Guests</dt><dd>${b.adults} adult${b.adults>1?'s':''}${b.children?`, ${b.children} child${b.children>1?'ren':''}`:''}</dd><dt>Pickup</dt><dd>${esc(b.pickup)}${b.zone==='out'?' <span class="pill warn">Outside area</span>':''}</dd><dt>Amount</dt><dd><b>${money(b.amount)}</b></dd><dt>Contact</dt><dd>${esc(b.phone)}<br>${esc(b.email)}</dd></dl>
+   <div class="box"><div class="row2">
+    ${Array.from({length:b.tuks},(_,i)=>`<div class="field"><label for="veh${i}">Tuk Tuk${b.tuks>1?' '+(i+1):''}</label><select class="inp" id="veh${i}" data-act-change="setveh" data-i="${i}">${S.fleet.map(v=>{const busy=others.has(v.id);const off=v.status!=='available';return `<option value="${v.id}" ${b.vehicles[i]===v.id?'selected':''} ${busy||off?'disabled':''}>${esc(v.name)}${busy?' (booked)':off?' ('+v.status+')':''}</option>`}).join('')}</select></div>`).join('')}
+    <div class="field"><label for="hostsel">Driver / host</label><select class="inp" id="hostsel" data-act-change="sethost">${S.hosts.map(x=>`<option ${b.host===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
+    <div class="field" style="margin:0"><label for="bnotes">Notes</label><textarea class="inp" id="bnotes" data-act-change="setnotes">${esc(b.notes)}</textarea></div></div>
+   ${mode==='reschedule'?`<div class="inline-box"><b>Reschedule</b><div class="row2"><div class="field" style="margin:0"><label for="rs-d">New date</label><input class="inp" type="date" id="rs-d" value="${b.date}" min="${TODAY}"></div><div class="field" style="margin:0"><label for="rs-t">New time</label><input class="inp" type="time" id="rs-t" value="${b.time}"></div></div><div class="err" id="rserr" role="alert"></div><div class="actions"><button class="btn btn-sea btn-sm" data-act="dorescheduled">Check availability & move</button><button class="btn btn-line btn-sm" data-act="dmode" data-m="">Cancel</button></div></div>`:''}
+   ${mode==='cancel'?`<div class="inline-box" style="border-color:var(--bad)"><b>Cancel this booking?</b><p style="font-size:14px">The Tuk Tuk${b.tuks>1?'s are':' is'} released and the guest’s reminders stop. Refund separately if needed.</p><div class="actions"><button class="btn btn-danger btn-sm" data-act="docancel">Yes, cancel booking</button><button class="btn btn-line btn-sm" data-act="dmode" data-m="">Keep booking</button></div></div>`:''}
+   ${mode==='refund'?`<div class="inline-box" style="border-color:var(--bad)"><b>Refund ${money(b.amount)} through iKhokha?</b><p style="font-size:14px">The booking is cancelled and the payment marked as refunded.</p><div class="actions"><button class="btn btn-danger btn-sm" data-act="dorefund">Refund ${money(b.amount)}</button><button class="btn btn-line btn-sm" data-act="dmode" data-m="">Back</button></div></div>`:''}
+   ${mode==='contact'?`<div class="inline-box"><b>Contact ${esc(b.first)}</b><div style="font-size:15px">WhatsApp / mobile: <b class="mono">${esc(b.phone)}</b><br>Email: <b class="mono">${esc(b.email)}</b></div><div class="actions"><a class="btn btn-sea btn-sm" href="https://wa.me/${b.phone.replace(/\D/g,'')}" target="_blank" rel="noopener">Open WhatsApp</a><button class="btn btn-line btn-sm" data-act="copy" data-t="${esc(b.phone)}">Copy number</button><button class="btn btn-line btn-sm" data-act="dmode" data-m="">Close</button></div></div>`:''}
+   ${b.payment==='PENDING'&&!mode?`<div class="inline-box"><b>Payment pending</b><p style="font-size:14px">An iKhokha PayLink for ${money(b.amount)} has been sent to the guest.</p><div class="actions"><button class="btn btn-sea btn-sm" data-act="markpaid">Mark as paid (simulate)</button></div></div>`:''}
+   <div class="actions">${b.status!=='Cancelled'?`<button class="btn btn-line btn-sm" data-act="dmode" data-m="reschedule">Reschedule</button><button class="btn btn-line btn-sm" data-act="dmode" data-m="cancel">Cancel</button>${b.payment==='PAID'?`<button class="btn btn-line btn-sm" data-act="dmode" data-m="refund">Refund</button>`:''}`:''}<button class="btn btn-line btn-sm" data-act="dmode" data-m="contact">Contact customer</button></div>
+   <div class="box"><h3 style="font-size:16px">Messages</h3><ul class="timeline">${msgPlan(b).map(m=>`<li class="${m.state==='Sent'?'':'sch'}"><div><b>${esc(m.name)}</b> <span class="pill ${m.state==='Sent'?'ok':m.state==='Scheduled'?'info':'warn'}" style="margin-left:4px">${esc(m.state)}</span><div class="muted" style="font-size:13px">${m.k==='confirm'?'On payment':esc(m.whenLabel)} · ${esc(m.ch)}</div></div></li>`).join('')}</ul></div>
+  </aside>`;
+}
+function renderDrawer(){document.getElementById('layer').innerHTML=U.admin.sel?drawerHTML():''}
+
+/* ---------- render ---------- */
+function render(scroll){
+  renderHeader();
+  const v=U.view;
+  const html={home:vHome,experiences:vExperiences,exp:vExp,book:vBook,pay:vPay,done:vDone,custom:vCustom,trip:vTrip,proposal:vProposal,admin:vAdmin}[v]();
+  document.getElementById('app').innerHTML=html+(v==='admin'?'':footer());
+  renderDrawer();
+  if(scroll)window.scrollTo(0,0);
+}
+function footer(){return `<footer class="footer"><div class="wrap"><div><b>Hakuna Matuktuk</b><br>Private Tuk Tuk adventures · Fish Hoek, Cape Town<br>WhatsApp <span class="mono">${WA}</span></div><div>Voted Top 5 Best Adventure Experience,<br>KFM Best of the Cape 2025 & 2026</div><div>Demo platform built by iHubSA<br><span class="muted">Turning business problems into digital solutions</span></div></div></footer>`}
+let toastT;function toast(t){clearTimeout(toastT);let el=document.querySelector('.toast');if(!el){el=document.createElement('div');el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}el.textContent=t;toastT=setTimeout(()=>el.remove(),2600)}
+
+/* ---------- actions ---------- */
+function goStep(i){U.d.step=i;U.d.err='';render(false);const p=document.querySelector('.panel');if(p&&p.getBoundingClientRect().top<0)p.scrollIntoView({behavior:'smooth'})}
+const ACT={
+  go(ds){U.view=ds.v;U.enqDone=null;if(ds.v==='custom')U.customKind=ds.kind&&['tailor-made','celebration'].includes(ds.kind)?ds.kind:(U.customKind||'tailor-made');render(true)},
+  exp(ds){U.view='exp';U.expId=ds.id;render(true)},
+  book(ds){U.d=newDraft(ds.id);U.view='book';render(true)},
+  step(ds){goStep(+ds.i)},
+  prev(){if(U.d.step>0)goStep(U.d.step-1)},
+  next(){const err=stepValid(U.d.step);if(err){U.d.err=err;document.getElementById('steperr').textContent=err;return}goStep(U.d.step+1)},
+  opt(ds){U.d.opt=ds.o;U.d.date=null;if(!X(U.d.expId).flexible)U.d.time=null;render(false)},
+  month(ds){const [y,m]=U.d.month.split('-').map(Number);const d=new Date(y,m-1+(+ds.dir),1);U.d.month=d.getFullYear()+'-'+pad(d.getMonth()+1);render(false)},
+  date(ds){U.d.date=ds.d;const e=X(U.d.expId);if(!e.flexible)U.d.time=null;U.d.err='';goStep(1)},
+  time(ds){U.d.time=ds.t;U.d.err='';goStep(2)},
+  guest(ds){const d=U.d;const k=ds.k;const n=Math.max(k==='adults'?1:0,Math.min(12,d[k]+(+ds.n)));d[k]=n;render(false)},
+  pick(ds){U.d.pickup=ds.p;const i=document.getElementById('pickup');if(i)i.value=ds.p;document.getElementById('zone').innerHTML=zoneHTML();document.getElementById('sum').innerHTML=summaryHTML()},
+  fill(){Object.assign(U.d,{first:'Lerato',last:'Mokoena',email:'lerato.mokoena@example.com',phone:'+27 82 555 0199'});render(false)},
+  topay(){const err=stepValid(5);if(err){document.getElementById('steperr').textContent=err;return}const d=U.d,e=X(d.expId);const t=tuksFor(dGuests(d));
+    if(freeVehicles(d.date,d.time,durOf(e,d.opt)).length<t){document.getElementById('steperr').textContent='Those Tuk Tuks have just been booked. Go back and choose another time.';return}
+    U.pay={src:{...d,amount:unitPrice(e,d.opt)*t,title:null},amount:unitPrice(e,d.opt)*t,title:e.name,date:d.date,time:d.time,state:'ready',back:'book'};U.view='pay';render(true)},
+  paycancel(){U.view=U.pay.back;render(true)},
+  payfail(){U.pay.state='failed';render(false)},
+  paid(){U.pay.state='processing';render(false);setTimeout(()=>{const r=createBooking(U.pay.src);if(r.error){U.pay.state='failed';render(false);toast(r.error);return}
+    if(U.pay.enquiryId){const q=S.enquiries.find(x=>x.id===U.pay.enquiryId);q.status='Booked';q.bookingRef=r.booking.ref;save()}
+    U.lastRef=r.booking.ref;U.view='done';render(true)},1400)},
+  adminbooking(ds){U.view='admin';U.admin.tab='bookings';U.admin.q='';U.admin.status='all';U.admin.sel=ds.ref;U.drawerMode=null;render(true)},
+  adminenq(){U.view='admin';U.admin.tab='enquiries';U.enqDone=null;render(true)},
+  ckind(ds){U.customKind=ds.k;document.querySelectorAll('[data-act="ckind"]').forEach(b=>b.classList.toggle('sel',b.dataset.k===ds.k))},
+  viewprop(ds){U.proposal=ds.id;U.view='proposal';render(true)},
+  acceptprop(){const q=S.enquiries.find(x=>x.id===U.proposal);if(!document.getElementById('pagree').checked){document.getElementById('perr').textContent='Please tick to accept the proposal.';return}
+    const g=+q.guests;const expId=q.kind==='trip'?'charter':q.kind;const time=q.time||'10:00';
+    if(freeVehicles(q.date,time,q.quote.hours).length<tuksFor(g)){document.getElementById('perr').textContent='No Tuk Tuks are free at that time any more. Please contact Hakuna on WhatsApp.';return}
+    const title=q.kind==='trip'?'Private Tuk Tuk Trip: '+q.pickup+' to '+q.dropoff:X(q.kind).name;
+    U.pay={src:{expId,opt:null,date:q.date,time,adults:g,children:0,pickup:q.pickup,first:q.first,last:q.last,email:q.email,phone:q.phone,notes:q.wish,amount:q.quote.amount,hours:q.quote.hours,title,source:'Website'},enquiryId:q.id,amount:q.quote.amount,title,date:q.date,time,state:'ready',back:'proposal'};U.view='pay';render(true)},
+  // admin
+  atab(ds){U.admin.tab=ds.t;U.admin.editExp=null;render(true)},
+  afilter(ds){U.admin.filter=ds.f;render(false)},
+  astatus(ds){U.admin.status=ds.s;render(false)},
+  amonth(ds){const [y,m]=U.admin.month.split('-').map(Number);const d=new Date(y,m-1+(+ds.dir),1);U.admin.month=d.getFullYear()+'-'+pad(d.getMonth()+1);render(false)},
+  calday(ds){U.admin.calDay=ds.d;render(false)},
+  open(ds){U.admin.sel=ds.ref;U.drawerMode=null;renderDrawer();const c=document.querySelector('.drawer .icon-btn');if(c)c.focus()},
+  close(){U.admin.sel=null;U.drawerMode=null;render(false)},
+  dmode(ds){U.drawerMode=ds.m||null;renderDrawer()},
+  dorescheduled(){const b=S.bookings.find(x=>x.ref===U.admin.sel);const d=document.getElementById('rs-d').value,t=document.getElementById('rs-t').value;const err=document.getElementById('rserr');
+    if(!d||!t){err.textContent='Choose a date and time.';return}
+    const free=freeVehicles(d,t,hoursOf(b),b.ref);if(free.length<b.tuks){err.textContent=`Only ${free.length} Tuk Tuk${free.length===1?' is':'s are'} free then. Choose another time.`;return}
+    const keep=b.vehicles.filter(v=>free.includes(v));const rest=free.filter(v=>!keep.includes(v));b.vehicles=keep.concat(rest).slice(0,b.tuks);b.date=d;b.time=t;save();U.drawerMode=null;render(false);toast(`Moved to ${fmtShort(d)} at ${t}. The guest’s reminders were updated.`)},
+  docancel(){const b=S.bookings.find(x=>x.ref===U.admin.sel);b.status='Cancelled';save();U.drawerMode=null;render(false);toast(`${b.ref} cancelled. Tuk Tuk released.`)},
+  dorefund(){const b=S.bookings.find(x=>x.ref===U.admin.sel);b.status='Cancelled';b.payment='REFUNDED';save();U.drawerMode=null;render(false);toast(`${money(b.amount)} refund issued for ${b.ref}.`)},
+  markpaid(){const b=S.bookings.find(x=>x.ref===U.admin.sel);b.payment='PAID';b.status='Confirmed';save();render(false);toast('Payment received. Confirmation sent to the guest.')},
+  copy(ds){const t=ds.t;try{navigator.clipboard.writeText(t).then(()=>toast('Number copied'),()=>toast('Select the number to copy it'))}catch(e){toast('Select the number to copy it')}},
+  tinstant(ds){const e=X(ds.id);if(e.poa)return;e.instant=!e.instant;save();render(false);toast(`${e.name}: ${e.instant?'instant booking on':'now enquiry only'}`)},
+  tactive(ds){const e=X(ds.id);e.active=!e.active;save();render(false);toast(`${e.name} ${e.active?'is live on the website':'is hidden from the website'}`)},
+  editexp(ds){U.admin.editExp=ds.id||null;render(true)},
+  quote(ds){U.admin.quoteFor=ds.id||null;render(false)},
+  msgsel(ds){U.admin.msgSel=ds.k;render(false)},
+  addbooking(){U.admin.adding=!U.admin.adding;render(false)},
+  reset(){if(U.confirmReset){S=seed();save();U.confirmReset=false;U.admin.sel=null;render(true);toast('Demo data reset')}else{U.confirmReset=true;toast('Click “Reset demo data” again to confirm');setTimeout(()=>U.confirmReset=false,4000)}}
+};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t||t.disabled)return;const a=ACT[t.dataset.act];if(a){e.preventDefault();a(t.dataset,t)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&U.admin.sel)ACT.close()});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.bind&&U.d){const k=t.dataset.bind;U.d[k]=t.type==='checkbox'?t.checked:t.value;
+    if(k==='pickup')document.getElementById('zone').innerHTML=zoneHTML();
+    if(k==='time'&&U.view==='book'){const st=document.getElementById('stepbody');/* refresh availability note without losing focus */const e2=X(U.d.expId);const f=t.value?freeVehicles(U.d.date,t.value,durOf(e2,U.d.opt)).length:0;const z=st.querySelector('.zone');if(z){z.className='zone '+(f>=1?'in':'out');z.lastElementChild.textContent=f>=1?`${f} Tuk Tuk${f>1?'s':''} free around this time.`:'No Tuk Tuks free around this time. Try another time or date.'}}
+    const s=document.getElementById('sum');if(s)s.innerHTML=summaryHTML();
+    const er=document.getElementById('steperr');if(er)er.textContent='';
+  }
+  if(t.dataset.abind==='q'){U.admin.q=t.value;const q=t.value.toLowerCase();let list=S.bookings.slice();const A=U.admin;
+    if(A.status==='upcoming')list=list.filter(b=>b.date>=TODAY&&b.status!=='Cancelled');else if(A.status!=='all')list=list.filter(b=>b.status===A.status);
+    if(q)list=list.filter(b=>(b.ref+' '+b.first+' '+b.last+' '+b.pickup+' '+X(b.expId).name+' '+b.source).toLowerCase().includes(q));
+    list.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));document.getElementById('btable').innerHTML=bookingTable(list,{showDate:true})}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;const a=t.dataset.actChange;if(!a)return;
+  if(a==='fleetstatus'){const v=S.fleet.find(x=>x.id===t.dataset.id);v.status=t.value;save();render(false);toast(`${v.name} is now ${t.value}. Booking availability updated.`)}
+  if(a==='fleetnote'){S.fleet.find(x=>x.id===t.dataset.id).note=t.value;save()}
+  if(a==='price'){const x=X(t.dataset.id);const n=Math.max(0,Math.round(+t.value||0));x.price=n;save();toast(`${x.name} now ${money(n)} on the website`)}
+  const b=S.bookings.find(x=>x.ref===U.admin.sel);
+  if(a==='setveh'&&b){const i=+t.dataset.i;if(b.vehicles.includes(t.value)&&b.vehicles[i]!==t.value){toast('That Tuk Tuk is already on this booking');renderDrawer();return}b.vehicles[i]=t.value;save();render(false);toast(`${vname(t.value)} assigned to ${b.ref}`)}
+  if(a==='sethost'&&b){b.host=t.value;save();render(false);toast(`${t.value} is hosting ${b.ref}`)}
+  if(a==='setnotes'&&b){b.notes=t.value;save();toast('Notes saved')}
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();const f=e.target;const fd=Object.fromEntries(new FormData(f).entries());
+  if(f.id==='enqform'||f.id==='tripform'){
+    const err=f.querySelector('#enqerr');
+    const need=['date','pickup','first','last','email','phone'].concat(f.id==='tripform'?['dropoff']:['wish']);
+    const miss=need.filter(k=>!String(fd[k]||'').trim());
+    if(miss.length){err.textContent='Please complete all required fields.';return}
+    if(!/^\S+@\S+\.\S+$/.test(fd.email)){err.textContent='Add a valid email address.';return}
+    const id='EQ-'+(S.eqSeq++);
+    S.enquiries.push({id,kind:f.id==='tripform'?'trip':(U.customKind||'tailor-made'),created:TODAY,date:fd.date,time:fd.time||'',guests:+fd.guests||2,pickup:fd.pickup,dropoff:fd.dropoff?(fd.dropoff+(fd.ret&&fd.ret.startsWith('Return')?' (return)':'')):'',wish:fd.wish||('Trip from '+fd.pickup+' to '+fd.dropoff),occasion:fd.occasion||'',duration:fd.duration||'',budget:fd.budget||'',first:fd.first,last:fd.last,email:fd.email,phone:fd.phone,status:'New',quote:null});
+    save();U.enqDone=id;render(true);return;
+  }
+  if(f.id==='quoteform'){const q=S.enquiries.find(x=>x.id===f.dataset.id);const amt=Math.round(+fd.amount);if(!amt||amt<1){f.querySelector('#qerr').textContent='Enter the total price.';return}
+    if(!fd.note.trim()){f.querySelector('#qerr').textContent='Describe what’s included.';return}
+    q.quote={amount:amt,hours:+fd.hours||4,note:fd.note.trim()};q.time=fd.time||q.time;q.status='Proposal sent';U.admin.quoteFor=null;save();render(false);toast(`Proposal sent to ${q.first} by email and WhatsApp`);return}
+  if(f.id==='expform'){const x=X(f.dataset.id);
+    x.name=fd.name.trim()||x.name;x.collection=fd.collection;if(fd.price!==undefined&&!x.options&&!x.poa)x.price=Math.max(0,Math.round(+fd.price||0));x.durationLabel=fd.durationLabel;x.hours=Math.max(.5,+fd.hours||x.hours);
+    x.times=fd.times.split(',').map(s=>s.trim()).filter(s=>/^\d{1,2}:\d{2}$/.test(s)).map(s=>s.padStart(5,'0'));x.rule=fd.rule;x.headline=fd.headline;
+    x.desc=fd.desc.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);x.includes=fd.includes.split('\n').map(s=>s.trim()).filter(Boolean);x.excludes=fd.excludes.split('\n').map(s=>s.trim()).filter(Boolean);
+    ['entryIncluded','transferIncluded','instant','active'].forEach(k=>x[k]=!!f.querySelector(`[name="${k}"]`).checked);if(x.poa)x.instant=false;
+    save();U.admin.editExp=null;render(true);toast(`${x.name} saved. The website is updated.`);return}
+  if(f.id==='addform'){const e2=X(fd.exp);const g=Math.max(1,+fd.guests||2);const t=tuksFor(g);const err=f.querySelector('#aberr');
+    if(!fd.name.trim()){err.textContent='Add the guest’s name.';return}
+    const free=freeVehicles(fd.date,fd.time,durOf(e2,null));if(free.length<t){err.textContent=`Not available: ${t} Tuk Tuk${t>1?'s':''} needed, ${free.length} free at ${fd.time} on ${fmtShort(fd.date)}.`;return}
+    const parts=fd.name.trim().split(/\s+/);const ref='HM-'+(S.seq++);
+    S.bookings.push({ref,expId:e2.id,opt:e2.options?e2.options[0].id:null,date:fd.date,time:fd.time,adults:g,children:0,tuks:t,vehicles:free.slice(0,t),pickup:fd.pickup,zone:pickupCheck(e2,fd.pickup)||'in',first:parts[0],last:parts.slice(1).join(' ')||'—',email:'',phone:fd.phone||'',notes:'',amount:unitPrice(e2,null)*t,payment:fd.pay,status:fd.pay==='PAID'?'Confirmed':'Pending payment',source:fd.source,host:S.hosts[0],created:TODAY});
+    save();U.admin.adding=false;U.admin.sel=ref;render(false);toast(`${ref} added and ${free.slice(0,t).map(vname).join(' & ')} allocated`);return}
+});
+
+render(true);
+})();
+</script>
+
+</body>
+</html>
